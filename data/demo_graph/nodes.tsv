@@ -1,0 +1,97 @@
+id	type	name	attributes
+HGNC:11509	gene	SYT1	{}
+HGNC:11444	gene	STXBP1	{}
+HGNC:18539	gene	STX1B	{}
+HGNC:11497	gene	SYNGAP1	{}
+HGNC:10585	gene	SCN1A	{}
+HGNC:10588	gene	SCN2A	{}
+HGNC:10590	gene	SCN3A	{}
+HGNC:10596	gene	SCN8A	{}
+HGNC:6296	gene	KCNQ2	{}
+HGNC:6297	gene	KCNQ3	{}
+MONDO:0011461	disease	generalized epilepsy with febrile seizures plus, type 2	"{""source_ids"": [""OMIM:604403""], ""n_symptoms"": 8}"
+MONDO:0030064	disease	episodic ataxia, type 9	"{""source_ids"": [""OMIM:618924""], ""n_symptoms"": 15}"
+MONDO:0100079	disease	developmental and epileptic encephalopathy, 6A	"{""source_ids"": [""OMIM:607208""], ""n_symptoms"": 23}"
+MONDO:0013680	disease	cognitive impairment with or without cerebellar ataxia	"{""source_ids"": [""OMIM:614306""], ""n_symptoms"": 20}"
+MONDO:0012320	disease	migraine, familial hemiplegic, 3	"{""source_ids"": [""OMIM:609634""], ""n_symptoms"": 7}"
+MONDO:0007366	disease	seizures, benign familial neonatal, 2	"{""source_ids"": [""OMIM:121201""], ""n_symptoms"": 4}"
+MONDO:0007365	disease	seizures, benign familial neonatal, 1	"{""source_ids"": [""OMIM:121200""], ""n_symptoms"": 6}"
+MONDO:0054776	disease	epilepsy, familial focal, with variable foci 4	"{""source_ids"": [""OMIM:617935""], ""n_symptoms"": 13}"
+MONDO:0033371	disease	developmental and epileptic encephalopathy, 62	"{""source_ids"": [""OMIM:617938""], ""n_symptoms"": 16}"
+MONDO:0100092	disease	myoclonus, familial, 2	"{""source_ids"": [""OMIM:618364""], ""n_symptoms"": 5}"
+MONDO:0014903	disease	seizures, benign familial infantile, 5	"{""source_ids"": [""OMIM:617080""], ""n_symptoms"": 3}"
+MONDO:0012812	disease	developmental and epileptic encephalopathy, 4	"{""source_ids"": [""OMIM:612164"", ""ORPHA:599373""], ""n_symptoms"": 46}"
+MONDO:0033864	disease	infantile hypotonia-oculomotor anomalies-hyperkinetic movements-developmental delay syndrome	"{""source_ids"": [""OMIM:618218"", ""ORPHA:522077""], ""n_symptoms"": 70}"
+MONDO:0013801	disease	developmental and epileptic encephalopathy, 13	"{""source_ids"": [""OMIM:614558""], ""n_symptoms"": 26}"
+MONDO:0030268	disease	developmental and epileptic encephalopathy 6B	"{""source_ids"": [""OMIM:619317""], ""n_symptoms"": 35}"
+MONDO:0014517	disease	generalized epilepsy with febrile seizures plus, type 9	"{""source_ids"": [""OMIM:616172""], ""n_symptoms"": 8}"
+MONDO:0012960	disease	intellectual disability, autosomal dominant 5	"{""source_ids"": [""OMIM:612621"", ""ORPHA:544254""], ""n_symptoms"": 52}"
+MONDO:0013388	disease	developmental and epileptic encephalopathy, 11	"{""source_ids"": [""OMIM:613721""], ""n_symptoms"": 11}"
+MONDO:0013387	disease	developmental and epileptic encephalopathy, 7	"{""source_ids"": [""OMIM:613720"", ""ORPHA:439218""], ""n_symptoms"": 23}"
+MONDO:0011904	disease	seizures, benign familial infantile, 3	"{""source_ids"": [""OMIM:607745"", ""ORPHA:140927""], ""n_symptoms"": 20}"
+MONDO:0009696	disease	juvenile myoclonic epilepsy	"{""source_ids"": [""ORPHA:307""], ""n_symptoms"": 10}"
+MONDO:0017615	disease	benign familial infantile epilepsy	"{""source_ids"": [""ORPHA:306""], ""n_symptoms"": 32}"
+MONDO:0015802	disease	autosomal dominant non-syndromic intellectual disability	"{""source_ids"": [""ORPHA:178469""], ""n_symptoms"": 0}"
+MONDO:0018214	disease	generalized epilepsy with febrile seizures plus	"{""source_ids"": [""ORPHA:36387""], ""n_symptoms"": 28}"
+MONDO:0044641	disease	9q33.3q34.11 microdeletion syndrome	"{""source_ids"": [""ORPHA:495818""], ""n_symptoms"": 53}"
+MONDO:0020310	disease	familial focal epilepsy with variable foci	"{""source_ids"": [""ORPHA:98820""], ""n_symptoms"": 26}"
+MONDO:0018097	disease	infantile spasms	"{""source_ids"": [""ORPHA:697160""], ""n_symptoms"": 6}"
+MONDO:0016532	disease	Lennox-Gastaut syndrome	"{""source_ids"": [""ORPHA:2382""], ""n_symptoms"": 25}"
+MONDO:0100566	disease	myoclonic epilepsy in infancy	"{""source_ids"": [""ORPHA:86909""], ""n_symptoms"": 34}"
+MONDO:0018614	disease	undetermined early-onset epileptic encephalopathy	"{""source_ids"": [""ORPHA:442835""], ""n_symptoms"": 48}"
+MONDO:0016027	disease	benign neonatal seizures	"{""source_ids"": [""ORPHA:1949""], ""n_symptoms"": 17}"
+MONDO:0014633	disease	epilepsy with myoclonic atonic seizures	"{""source_ids"": [""ORPHA:1942""], ""n_symptoms"": 43}"
+MONDO:0800491	disease	early-infantile DEE	"{""source_ids"": [""ORPHA:1934""], ""n_symptoms"": 63}"
+MONDO:0017385	disease	malignant migrating partial seizures of infancy	"{""source_ids"": [""ORPHA:293181""], ""n_symptoms"": 25}"
+MONDO:0018925	disease	familial or sporadic hemiplegic migraine	"{""source_ids"": [""ORPHA:569""], ""n_symptoms"": 51}"
+MONDO:0016241	disease	alternating hemiplegia of childhood	"{""source_ids"": [""ORPHA:2131""], ""n_symptoms"": 63}"
+ORPHA:33069	disease	Dravet syndrome	"{""source_ids"": [""ORPHA:33069""], ""n_symptoms"": 46}"
+HP:0002372	symptom	Normal interictal EEG	"{""information_content"": 8.08, ""diseases_annotated"": 4}"
+HP:0011197	symptom	EEG with focal spike waves	"{""information_content"": 8.08, ""diseases_annotated"": 4}"
+HP:0007207	symptom	Photosensitive tonic-clonic seizure	"{""information_content"": 7.85, ""diseases_annotated"": 5}"
+HP:0032807	symptom	Neonatal seizure	"{""information_content"": 7.67, ""diseases_annotated"": 6}"
+HP:0001326	symptom	EEG with irregular generalized spike and wave complexes	"{""information_content"": 7.67, ""diseases_annotated"": 6}"
+HP:0011196	symptom	EEG with focal sharp waves	"{""information_content"": 7.52, ""diseases_annotated"": 7}"
+HP:0011172	symptom	Complex febrile seizure	"{""information_content"": 7.38, ""diseases_annotated"": 8}"
+HP:0031475	symptom	Status epilepticus without prominent motor symptoms	"{""information_content"": 7.27, ""diseases_annotated"": 9}"
+HP:0011468	symptom	Facial tics	"{""information_content"": 7.27, ""diseases_annotated"": 9}"
+HP:0033258	symptom	Sudden unexpected death in epilepsy	"{""information_content"": 7.07, ""diseases_annotated"": 11}"
+HP:0011150	symptom	Myoclonic absence seizure	"{""information_content"": 7.07, ""diseases_annotated"": 11}"
+HP:0100694	symptom	Tibial torsion	"{""information_content"": 6.82, ""diseases_annotated"": 14}"
+HP:0012547	symptom	Abnormal involuntary eye movements	"{""information_content"": 6.82, ""diseases_annotated"": 14}"
+HP:0011185	symptom	EEG with focal epileptiform discharges	"{""information_content"": 6.76, ""diseases_annotated"": 15}"
+HP:0002349	symptom	Focal aware seizure	"{""information_content"": 6.69, ""diseases_annotated"": 16}"
+HP:0003066	symptom	Limited knee extension	"{""information_content"": 6.69, ""diseases_annotated"": 16}"
+HP:0011169	symptom	Generalized clonic seizure	"{""information_content"": 6.63, ""diseases_annotated"": 17}"
+HP:0002077	symptom	Migraine with aura	"{""information_content"": 6.57, ""diseases_annotated"": 18}"
+HP:0011167	symptom	Focal tonic seizure	"{""information_content"": 6.57, ""diseases_annotated"": 18}"
+HP:0006813	symptom	Focal hemiclonic seizure	"{""information_content"": 6.52, ""diseases_annotated"": 19}"
+HP:0045084	symptom	Limb myoclonus	"{""information_content"": 6.52, ""diseases_annotated"": 19}"
+HP:0007166	symptom	Paroxysmal dyskinesia	"{""information_content"": 6.47, ""diseases_annotated"": 20}"
+HP:0010850	symptom	EEG with spike-wave complexes	"{""information_content"": 6.42, ""diseases_annotated"": 21}"
+HP:0011171	symptom	Simple febrile seizure	"{""information_content"": 6.42, ""diseases_annotated"": 21}"
+HP:0002392	symptom	EEG with polyspike wave complexes	"{""information_content"": 6.29, ""diseases_annotated"": 24}"
+HP:0002266	symptom	Focal clonic seizure	"{""information_content"": 6.21, ""diseases_annotated"": 26}"
+HP:0031284	symptom	Flushing	"{""information_content"": 6.13, ""diseases_annotated"": 28}"
+HP:0002131	symptom	Episodic ataxia	"{""information_content"": 6.1, ""diseases_annotated"": 29}"
+HP:0025373	symptom	Interictal EEG abnormality	"{""information_content"": 6.1, ""diseases_annotated"": 29}"
+HP:0008770	symptom	Obsessive-compulsive trait	"{""information_content"": 6.0, ""diseases_annotated"": 32}"
+REACT:R-HSA-5250971	pathway	Toxicity of botulinum toxin type C (botC)	{}
+REACT:R-HSA-5682910	pathway	LGI-ADAM interactions	{}
+REACT:R-HSA-1296072	pathway	Voltage gated Potassium channels	{}
+REACT:R-HSA-445095	pathway	Interaction between L1 and Ankyrins	{}
+REACT:R-HSA-5576892	pathway	Phase 0 - rapid depolarisation	{}
+REACT:R-HSA-9717207	pathway	Sensory perception of sweet, bitter, and umami (glutamate) taste	{}
+REACT:R-HSA-181429	pathway	Serotonin Neurotransmitter Release Cycle	{}
+REACT:R-HSA-181430	pathway	Norepinephrine Neurotransmitter Release Cycle	{}
+REACT:R-HSA-210500	pathway	Glutamate Neurotransmitter Release Cycle	{}
+REACT:R-HSA-212676	pathway	Dopamine Neurotransmitter Release Cycle	{}
+REACT:R-HSA-264642	pathway	Acetylcholine Neurotransmitter Release Cycle	{}
+REACT:R-HSA-422356	pathway	Regulation of insulin secretion	{}
+REACT:R-HSA-6794361	pathway	Neurexins and neuroligins	{}
+REACT:R-HSA-888590	pathway	GABA synthesis, release, reuptake and degradation	{}
+REACT:R-HSA-5250958	pathway	Toxicity of botulinum toxin type B (botB)	{}
+REACT:R-HSA-5250989	pathway	Toxicity of botulinum toxin type G (botG)	{}
+REACT:R-HSA-8856825	pathway	Cargo recognition for clathrin-mediated endocytosis	{}
+REACT:R-HSA-8856828	pathway	Clathrin-mediated endocytosis	{}
+REACT:R-HSA-5658442	pathway	Regulation of RAS by GAPs	{}
