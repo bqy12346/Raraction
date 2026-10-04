@@ -15,6 +15,7 @@ Asterisk is a backend-first demo that implements challenge [05.pdf](05.pdf) for 
 The **STXBP1/SLC6A1 starter** remains available through **Open the example map**: 22 nodes and 29 manually curated relationships. It demonstrates deeper mechanism and shared-registry interpretation. New live graphs do not reuse its disease-specific facts, labels, or actions.
 
 Agent provider setup, including **Bright Data** and a **Lovable backend agent**, is documented in [docs/AGENT_SETUP.md](docs/AGENT_SETUP.md). The integrations keep keys server-side.
+<img width="1920" height="1080" alt="Asterisk_Technical_Overview" src="https://github.com/user-attachments/assets/92dc954e-9a0e-42ad-8741-26ce71e1b85c" />
 
 ## Interface
 
