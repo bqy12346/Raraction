@@ -1,6 +1,6 @@
 <img width="2172" height="724" alt="asterisk-logo-horizontal" src="https://github.com/user-attachments/assets/6da53285-e6b7-4757-9f07-de27fd6d2966" />
 
-https://github.com/bqy12346/asterisk
+(https://asterisk-flame.vercel.app/)
 
 **English** | [简体中文](README.zh-CN.md)
 
