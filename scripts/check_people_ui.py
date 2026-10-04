@@ -81,7 +81,7 @@ def main():
         assert js("new Set([...document.querySelectorAll('.research-hover')].map(n=>n.id)).size===document.querySelectorAll('.research-hover').length")
         assert js("document.querySelector('.featured .research-art').offsetHeight > document.querySelectorAll('.research-art')[1].offsetHeight")
         assert js("!document.querySelector('.locale-note') && document.querySelector('.ai-jump').hash === '#ai-guide'")
-        assert js("document.querySelector('#review-output').textContent.includes('patients, families')")
+        assert js("getComputedStyle(document.querySelector('#review-output')).display === 'none'")
         assert js("document.querySelector('#cluster-list').textContent.includes('Shared phenotypes')")
         js("document.querySelector('.research-tile').scrollIntoView({block:'center'})")
         point = js("(()=>{const r=document.querySelector('.research-tile').getBoundingClientRect();return {x:r.left+30,y:r.top+30}})()")
