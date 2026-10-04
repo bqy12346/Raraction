@@ -1,0 +1,32 @@
+subject	subject_name	subject_kind	predicate	object	url	terms
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	serves_community	STXBP1	https://www.stxbp1disorders.org/clinicaltrialsandresearch	STXBP1
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	supports_study	ASSET:starr-study	https://www.stxbp1disorders.org/clinicaltrialsandresearch	STARR
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	supports_study	ASSET:rare-x	https://www.stxbp1disorders.org/clinicaltrialsandresearch	RARE-X
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	supports_study	ORG:simons-searchlight	https://www.stxbp1disorders.org/clinicaltrialsandresearch	Simons Searchlight
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	supports_study	ORG:european-stxbp1-consortium	https://www.stxbp1disorders.org/clinicaltrialsandresearch	ESCO
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	member_of	ORG:combinedbrain	https://www.stxbp1disorders.org/blog/stxbp1-combinedbraintospeedclinicaltrialreadiness	COMBINEDBrain
+ORG:stxbp1-foundation	STXBP1 Foundation	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	STXBP1 Foundation|Devinsky
+ORG:syngap-research-fund	SynGAP Research Fund (Cure SYNGAP1)	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	SynGAP Research Fund|Devinsky
+ORG:rett-syndrome-research-trust	Rett Syndrome Research Trust	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	Rett Syndrome Research Trust|Devinsky
+ORG:cacna1a-foundation	CACNA1A Foundation	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	CACNA1A Foundation|Devinsky
+ORG:loulou-foundation	Loulou Foundation	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	Loulou Foundation|Devinsky
+ORG:kcnq2-cure-alliance	KCNQ2 Cure Alliance	patient organization	co_funds	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	KCNQ2 Cure Alliance|Devinsky
+PERSON:devinsky_orrin	Orrin Devinsky	researcher	leads_study	ASSET:nyu-seizure-types-study	https://www.stxbp1disorders.org/news/six-patient-advocacy-groups-collaborate-to-co-fund-a-single-center-observational-study-of-seizure-types-in-rare-genetic-epilepsies	Devinsky
+ORG:the-cute-syndrome-foundation	The Cute Syndrome Foundation	patient organization	serves_community	SCN8A	https://www.thecutesyndrome.com/about-us.html	SCN8A
+ORG:the-cute-syndrome-foundation	The Cute Syndrome Foundation	patient organization	serves_community	SCN8A	https://www.rareepilepsynetwork.org/post/get-to-know-the-cute-syndrome-foundation-scn8a-epilepsy	SCN8A
+ORG:international-scn8a-alliance	International SCN8A Alliance	patient organization	serves_community	SCN8A	https://scn8a.net/	SCN8A
+ORG:project-cask	Project CASK	patient organization	serves_community	CASK	https://www.projectcask.org/	CASK
+ORG:project-cask	Project CASK	patient organization	serves_community	CASK	https://www.projectcask.org/about-cask	CASK
+ORG:baker-gordon-syndrome-foundation	The Baker-Gordon Syndrome Foundation	patient organization	serves_community	SYT1	https://www.bagosfoundation.org/	SYT1
+ORG:baker-gordon-syndrome-foundation	The Baker-Gordon Syndrome Foundation	patient organization	serves_community	SYT1	https://rarediseases.org/organizations/the-baker-gordon-syndrome-foundation/	SYT1
+ORG:baker-gordon-syndrome-foundation	The Baker-Gordon Syndrome Foundation	patient organization	runs_registry	SYT1	https://www.bagosfoundation.org/	registry
+ORG:tbc1d24-foundation	TBC1D24 Foundation	patient organization	serves_community	TBC1D24	https://www.rareepilepsynetwork.org/post/get-to-know-tbc1d24-mutation-foundation	TBC1D24
+ORG:tbc1d24-foundation	TBC1D24 Foundation	patient organization	serves_community	TBC1D24	https://www.milliondollarbikeride.org/tbc1d24-foundation	TBC1D24
+ORG:vamp2-org	VAMP2.org	patient organization	serves_community	VAMP2	https://vamp2.org/	VAMP2
+ORG:raging-raymond-foundation	Raging Raymond Foundation	patient organization	serves_community	VAMP2	https://ragingraymondfoundation.org/vamp2-syndrome	VAMP2
+ORG:raging-raymond-foundation	Raging Raymond Foundation	patient organization	partners_with	ORG:simons-searchlight	https://ragingraymondfoundation.org/vamp2-syndrome	Simons Searchlight
+ORG:simons-searchlight	Simons Searchlight	registry	enrolls_gene	VAMP2	https://www.simonssearchlight.org/gene-guide/vamp2/	VAMP2
+ORG:simons-searchlight	Simons Searchlight	registry	enrolls_gene	STXBP1	https://www.simonssearchlight.org/gene-guide/stxbp1/	STXBP1
+ORG:simons-searchlight	Simons Searchlight	registry	enrolls_gene	SCN8A	https://www.simonssearchlight.org/gene-guide/scn8a/	SCN8A
+ORG:simons-searchlight	Simons Searchlight	registry	enrolls_gene	CASK	https://www.simonssearchlight.org/gene-guide/cask/	CASK
+ORG:simons-searchlight	Simons Searchlight	registry	enrolls_gene	SYT1	https://www.simonssearchlight.org/gene-guide/syt1/	SYT1

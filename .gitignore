@@ -5,3 +5,6 @@ node_modules/
 *.pyc
 .DS_Store
 data/raw/
+# raw API responses for the slice (about 150 MB, re-fetched by the pipeline); model answers are kept so the build reproduces without a key
+data/slice/cache/*
+!data/slice/cache/openai/

@@ -1,0 +1,1089 @@
+{
+ "seed": "MONDO:0012812",
+ "genes": [
+  {
+   "id": "HGNC:1497",
+   "symbol": "CASK",
+   "name": "calcium/calmodulin dependent serine protein kinase",
+   "ncbi_gene_id": "8573"
+  },
+  {
+   "id": "HGNC:2309",
+   "symbol": "CPLX1",
+   "name": "complexin 1",
+   "ncbi_gene_id": "10815"
+  },
+  {
+   "id": "HGNC:4092",
+   "symbol": "GAD1",
+   "name": "glutamate decarboxylase 1",
+   "ncbi_gene_id": "2571"
+  },
+  {
+   "id": "HGNC:4331",
+   "symbol": "GLS",
+   "name": "glutaminase",
+   "ncbi_gene_id": "2744"
+  },
+  {
+   "id": "HGNC:9247",
+   "symbol": "PPFIA3",
+   "name": "PPFI scaffold protein A3",
+   "ncbi_gene_id": "8541"
+  },
+  {
+   "id": "HGNC:10596",
+   "symbol": "SCN8A",
+   "name": "sodium voltage-gated channel alpha subunit 8",
+   "ncbi_gene_id": "6334"
+  },
+  {
+   "id": "HGNC:11018",
+   "symbol": "SLC32A1",
+   "name": "solute carrier family 32 member 1",
+   "ncbi_gene_id": "140679"
+  },
+  {
+   "id": "HGNC:11444",
+   "symbol": "STXBP1",
+   "name": "syntaxin binding protein 1",
+   "ncbi_gene_id": "6812"
+  },
+  {
+   "id": "HGNC:11509",
+   "symbol": "SYT1",
+   "name": "synaptotagmin 1",
+   "ncbi_gene_id": "6857"
+  },
+  {
+   "id": "HGNC:29203",
+   "symbol": "TBC1D24",
+   "name": "TBC1 domain family member 24",
+   "ncbi_gene_id": "57465"
+  },
+  {
+   "id": "HGNC:16831",
+   "symbol": "TSPOAP1",
+   "name": "TSPO associated protein 1",
+   "ncbi_gene_id": "9256"
+  },
+  {
+   "id": "HGNC:12643",
+   "symbol": "VAMP2",
+   "name": "vesicle associated membrane protein 2",
+   "ncbi_gene_id": "6844"
+  }
+ ],
+ "diseases": [
+  {
+   "id": "MONDO:0008684",
+   "name": "Wolf-Hirschhorn syndrome",
+   "genes": [
+    "CPLX1",
+    "CTBP1",
+    "FGFRL1",
+    "LETM1",
+    "NSD2"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "4p deletion syndrome",
+    "4p syndrome",
+    "4p- syndrome",
+    "Pitt syndrome",
+    "Pitt-Rogers-Danks syndrome",
+    "WHS",
+    "Wittwer syndrome",
+    "Wolf syndrome",
+    "Wolf-Hirschhorn syndrome, Isolated cases",
+    "chromosome 4p syndrome",
+    "chromosome 4p16.3 deletion syndrome",
+    "distal deletion 4p",
+    "distal monosomy 4p",
+    "microcephaly, IUGR, hypertelorism, ptosis, iris coloboma, hooked nose, external ear dysplasia, psychomotor retardation",
+    "telomeric deletion 4p"
+   ]
+  },
+  {
+   "id": "MONDO:0009079",
+   "name": "DOORS syndrome",
+   "genes": [
+    "ATP6V1B2",
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Transport of small molecules",
+   "in_first_ring": false,
+   "synonyms": [
+    "DOORS",
+    "Digitorenocerebral syndrome",
+    "autosomal recessive deafness-onychodystrophy syndrome",
+    "deafness onychodystrophy osteodystrophy and intellectual disability syndrome",
+    "deafness onychodystrophy osteodystrophy and mental retardation syndrome",
+    "deafness, onychodystrophy, osteodystrophy, intellectual disability, and seizures syndrome",
+    "deafness, onychodystrophy, osteodystrophy, mental retardation, and seizures syndrome",
+    "deafness-onychodystrophy-osteodystrophy-intellectual disability syndrome",
+    "deafness-onychodystrophy-osteodystrophy-intellectual disability-seizures syndrome",
+    "deafness-onychoosteodystrophy-intellectual disability syndrome",
+    "door syndrome"
+   ]
+  },
+  {
+   "id": "MONDO:0010318",
+   "name": "FG syndrome 4",
+   "genes": [
+    "CASK"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "CASK FG syndrome",
+    "CASK-related FG syndrome",
+    "FG syndrome caused by mutation in cask",
+    "FG syndrome type 4",
+    "FGS4",
+    "cask FG syndrome",
+    "mental retardation, X-linked, with or without Nystagmus"
+   ]
+  },
+  {
+   "id": "MONDO:0010417",
+   "name": "syndromic X-linked intellectual disability Najm type",
+   "genes": [
+    "CASK"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "MICPCH",
+    "MICPCH syndrome",
+    "X-linked intellectual disability - microcephaly - pontocerebellar hypoplasia",
+    "X-linked intellectual disability-microcephaly-pontocerebellar hypoplasia syndrome",
+    "intellectual disability and microcephaly with pontine and cerebellar hypoplasia",
+    "mental retardation and microcephaly with PONTINE and cerebellar hypoplasia",
+    "mental retardation and microcephaly with pontine and cerebellar hypoplasia",
+    "mental retardation, X-linked, syndromic, Najm type",
+    "microcephaly with pontine and cerebellar hypoplasia"
+   ]
+  },
+  {
+   "id": "MONDO:0010480",
+   "name": "anemia, nonspherocytic hemolytic, due to G6PD deficiency",
+   "genes": [
+    "CASK",
+    "G6PD"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "Class I G6PD deficiency",
+    "anemia, congenital, nonspherocytic hemolytic, 1, G6PD deficient",
+    "class I glucose-6-phosphate dehydrogenase deficiency",
+    "hemolytic anaemia due to G6PD deficiency",
+    "hemolytic anemia due to G6PD deficiency",
+    "hemolytic anemia, G6PD deficient (favism), X-linked dominant",
+    "severe hemolytic anaemia due to G6PD deficiency",
+    "severe hemolytic anemia due to G6PD deficiency"
+   ]
+  },
+  {
+   "id": "MONDO:0011506",
+   "name": "familial infantile myoclonic epilepsy",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "FIME",
+    "familial infantile myoclonus epilepsy",
+    "myoclonic epilepsy, familial infantile",
+    "myoclonic epilepsy, infantile, familial"
+   ]
+  },
+  {
+   "id": "MONDO:0011551",
+   "name": "TH-deficient dopa-responsive dystonia",
+   "genes": [
+    "TH",
+    "TSPOAP1"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "DOPA responsive dystonia, autosomal recessive",
+    "DYT5b",
+    "Dopa-responsive dystonia, autosomal recessive",
+    "Segawa syndrome, recessive",
+    "Tyrosine Hydroxylase Deficiency",
+    "autosomal recessive Segawa syndrome",
+    "autosomal recessive dopa-responsive dystonia",
+    "dopa-responsive dystonia, autosomal recessive",
+    "dystonia, DOPA responsive, autosomal recessive",
+    "tyrosine hydroxylase-deficient dopa-responsive dystonia"
+   ]
+  },
+  {
+   "id": "MONDO:0011970",
+   "name": "rolandic epilepsy-paroxysmal exercise-induced dystonia-writer's cramp syndrome",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "EPRPDC",
+    "epilepsy, ROLANDIC, with paroxysmal exercise-induced dystonia and writer'S cramp",
+    "epilepsy, rolandic, with paroxysmal exercise-induce dystonia and writer's cramp"
+   ]
+  },
+  {
+   "id": "MONDO:0012812",
+   "name": "developmental and epileptic encephalopathy, 4",
+   "genes": [
+    "STXBP1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "DEE4",
+    "EIEE4",
+    "STXBP1 early infantile epileptic encephalopathy",
+    "STXBP1-related early-onset encephalopathy",
+    "STXBP1-related encephalopathy",
+    "developmental and epileptic encephalopathy 4",
+    "early infantile epileptic encephalopathy 4",
+    "early infantile epileptic encephalopathy caused by mutation in STXBP1",
+    "epileptic encephalopathy, early infantile, 4",
+    "epileptic encephalopathy, early infantile, type 4"
+   ]
+  },
+  {
+   "id": "MONDO:0013680",
+   "name": "cognitive impairment with or without cerebellar ataxia",
+   "genes": [
+    "SCN8A"
+   ],
+   "direction": "",
+   "mechanism_class": "Muscle contraction",
+   "in_first_ring": false,
+   "synonyms": [
+    "CIAT"
+   ]
+  },
+  {
+   "id": "MONDO:0013801",
+   "name": "developmental and epileptic encephalopathy, 13",
+   "genes": [
+    "SCN8A"
+   ],
+   "direction": "",
+   "mechanism_class": "Muscle contraction",
+   "in_first_ring": false,
+   "synonyms": [
+    "DEE13",
+    "EIEE13",
+    "SCN8A early infantile epileptic encephalopathy",
+    "SCN8A encephalopathy",
+    "SCN8A epilepsy",
+    "developmental and epileptic encephalopathy 13",
+    "early infantile epileptic encephalopathy caused by mutation in SCN8A",
+    "early infantile epileptic encephalopathy-13",
+    "epileptic encephalopathy, early infantile, 13",
+    "epileptic encephalopathy, early infantile, type 13"
+   ]
+  },
+  {
+   "id": "MONDO:0013826",
+   "name": "autosomal recessive nonsyndromic hearing loss 86",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "DFNB86",
+    "TBC1D24 autosomal recessive nonsyndromic deafness",
+    "autosomal recessive deafness 86",
+    "autosomal recessive nonsyndromic deafness 86",
+    "autosomal recessive nonsyndromic deafness caused by mutation in TBC1D24",
+    "autosomal recessive nonsyndromic deafness type 86",
+    "deafness, autosomal recessive 86",
+    "deafness, autosomal recessive type 86"
+   ]
+  },
+  {
+   "id": "MONDO:0014133",
+   "name": "developmental and epileptic encephalopathy, 16",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "DEE16",
+    "EIEE16",
+    "developmental and epileptic encephalopathy 16",
+    "epileptic encephalopathy, early infantile, 16",
+    "epileptic encephalopathy, early infantile, type 16"
+   ]
+  },
+  {
+   "id": "MONDO:0014470",
+   "name": "autosomal dominant nonsyndromic hearing loss 65",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "DFNA65",
+    "TBC1D24 autosomal dominant nonsyndromic deafness",
+    "autosomal dominant deafness 65",
+    "autosomal dominant nonsyndromic deafness 65",
+    "autosomal dominant nonsyndromic deafness caused by mutation in TBC1D24",
+    "autosomal dominant nonsyndromic deafness type 65",
+    "deafness, autosomal dominant 65",
+    "deafness, autosomal dominant type 65"
+   ]
+  },
+  {
+   "id": "MONDO:0014903",
+   "name": "seizures, benign familial infantile, 5",
+   "genes": [
+    "SCN8A"
+   ],
+   "direction": "",
+   "mechanism_class": "Muscle contraction",
+   "in_first_ring": false,
+   "synonyms": [
+    "BFIS5",
+    "SCN8A benign familial infantile epilepsy",
+    "benign familial infantile epilepsy caused by mutation in SCN8A",
+    "seizures, benign familial infantile, 5; BFIS5",
+    "seizures, benign familial infantile, type 5"
+   ]
+  },
+  {
+   "id": "MONDO:0015802",
+   "name": "autosomal dominant non-syndromic intellectual disability",
+   "genes": [
+    "ARF3",
+    "ASH1L",
+    "BRSK2",
+    "CACNA1I",
+    "CACNG2",
+    "CAMK2A",
+    "CAMK2B",
+    "CDH15",
+    "CIC",
+    "CLTC",
+    "CSNK2B",
+    "CTNND2",
+    "CUX1",
+    "DLL1",
+    "DOCK8",
+    "DPYSL2",
+    "DYNC1H1",
+    "EPB41L1",
+    "ERBB4",
+    "GABBR1",
+    "GRIA1",
+    "GRIN1",
+    "HIVEP2",
+    "ITSN1",
+    "KCNQ2",
+    "KCNQ5",
+    "KIRREL3",
+    "MBD5",
+    "NBEA",
+    "PRICKLE2",
+    "RAB11A",
+    "SCN2A",
+    "SCN8A",
+    "SEMA6B",
+    "SET",
+    "SETD1B",
+    "SLC6A1",
+    "TAOK1",
+    "TCF4",
+    "TRPM3",
+    "YWHAZ"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Signal Transduction",
+   "in_first_ring": false,
+   "synonyms": [
+    "autosomal dominant mental retardation",
+    "non-syndromic intellectual disability, autosomal dominant"
+   ]
+  },
+  {
+   "id": "MONDO:0016215",
+   "name": "spastic quadriplegic cerebral palsy",
+   "genes": [
+    "ADD3",
+    "GAD1",
+    "KANK1"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Signal Transduction",
+   "in_first_ring": false,
+   "synonyms": [
+    "inherited congenital spastic quadriplegia",
+    "quadriplegic infantile cerebral palsy",
+    "spastic quadriplegia",
+    "spastic tetraplegia cerebral palsy",
+    "tetraplegic infantile cerebral palsy"
+   ]
+  },
+  {
+   "id": "MONDO:0017385",
+   "name": "malignant migrating partial seizures of infancy",
+   "genes": [
+    "KCNQ2",
+    "KCNT1",
+    "PIGA",
+    "PLCB1",
+    "SCN1A",
+    "SCN2A",
+    "SLC12A5",
+    "SLC25A22",
+    "TBC1D24"
+   ],
+   "direction": "both reported",
+   "mechanism_class": "Metabolism",
+   "in_first_ring": false,
+   "synonyms": [
+    "EIMFS",
+    "MMPEI",
+    "MMPSI",
+    "MPEI",
+    "MPSI",
+    "epilepsy of infancy with migrating focal seizures",
+    "malignant migrating Partial seizures in infancy",
+    "malignant migrating partial epilepsy of infancy",
+    "migrating Partial seizures in infancy",
+    "migrating partial epilepsy of infancy",
+    "migrating partial seizures of infancy"
+   ]
+  },
+  {
+   "id": "MONDO:0017615",
+   "name": "benign familial infantile epilepsy",
+   "genes": [
+    "KCNQ2",
+    "KCNQ3",
+    "PRRT2",
+    "SCN2A",
+    "SCN8A"
+   ],
+   "direction": "gain of function",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "BFIE",
+    "BFIS",
+    "benign familial infantile convulsions",
+    "benign familial infantile seizures",
+    "seizures, benign familial infantile"
+   ]
+  },
+  {
+   "id": "MONDO:0018125",
+   "name": "focal epilepsy-intellectual disability-cerebro-cerebellar malformation",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "focal epilepsy-intellectual disability-dysarthria-ataxia syndrome"
+   ]
+  },
+  {
+   "id": "MONDO:0018126",
+   "name": "progressive myoclonic epilepsy with dystonia",
+   "genes": [
+    "TBC1D24"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Vesicle-mediated transport",
+   "in_first_ring": false,
+   "synonyms": [
+    "PMED",
+    "progressive myoclonus epilepsy with dystonia"
+   ]
+  },
+  {
+   "id": "MONDO:0018214",
+   "name": "generalized epilepsy with febrile seizures plus",
+   "genes": [
+    "CPA6",
+    "FGF13",
+    "GABRG2",
+    "HCN1",
+    "PRRT2",
+    "SCN1A",
+    "SCN1B",
+    "SLC32A1",
+    "STX1B"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "GEFS+",
+    "epilepsy, generalized, with febrile seizures plus",
+    "generalised epilepsy with febrile seizures-plus",
+    "genetic epilepsy with febrile seizures plus",
+    "genetic epilepsy with febrile seizures-plus"
+   ]
+  },
+  {
+   "id": "MONDO:0018614",
+   "name": "undetermined early-onset epileptic encephalopathy",
+   "genes": [
+    "AARS1",
+    "ACTL6B",
+    "AP3B2",
+    "ATP1A2",
+    "ATP1A3",
+    "ATP6V1A",
+    "CACNA1A",
+    "CACNA1B",
+    "CACNA2D1",
+    "CDK19",
+    "CELF2",
+    "CLTC",
+    "CNKSR2",
+    "CYFIP2",
+    "DALRD3",
+    "DEPDC5",
+    "DHDDS",
+    "DNM1",
+    "EEF1A2",
+    "FBXO28",
+    "FGF12",
+    "FOXG1",
+    "FZR1",
+    "GABBR2",
+    "GABRA2",
+    "GABRA5",
+    "GABRB2",
+    "GABRG2",
+    "GRIN2D",
+    "HCN1",
+    "KCNA2",
+    "KCNB1",
+    "KCNC2",
+    "KCNH5",
+    "MDGA2",
+    "NECAP1",
+    "NTRK2",
+    "NUS1",
+    "PACS2",
+    "PARS2",
+    "PPP3CA",
+    "SCN1A",
+    "SCN3A",
+    "SCN8A",
+    "SLC13A5",
+    "SLC1A2",
+    "SLC38A3",
+    "SYNJ1",
+    "SZT2",
+    "TRAK1",
+    "UBA5",
+    "UFSP2",
+    "YWHAG"
+   ],
+   "direction": "both reported",
+   "mechanism_class": "Signal Transduction",
+   "in_first_ring": false,
+   "synonyms": [
+    "non-specific early-onset epileptic encephalopathy",
+    "undetermined EOEE"
+   ]
+  },
+  {
+   "id": "MONDO:0019181",
+   "name": "non-syndromic X-linked intellectual disability",
+   "genes": [
+    "ACSL4",
+    "AGTR2",
+    "ALG13",
+    "ARHGEF6",
+    "ARX",
+    "CASK",
+    "CLCN4",
+    "CNKSR2",
+    "DLG3",
+    "DMD",
+    "FRMPD4",
+    "FTSJ1",
+    "GDI1",
+    "HCFC1",
+    "IL1RAPL1",
+    "MECP2",
+    "MID2",
+    "RAB39B",
+    "RPS6KA3",
+    "SLC9A7",
+    "STEEP1",
+    "SYP",
+    "TSPAN7",
+    "UPF3B",
+    "USP27X",
+    "USP9X",
+    "ZNF711",
+    "ZNF81"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": [
+    "X-linked non-specific intellectual disability",
+    "X-linked non-syndromic intellectual disability",
+    "intellectual disability, X-linked, nonsyndromic",
+    "intellectual disability, nonsyndromic, X-linked",
+    "isolated X-linked intellectual disability",
+    "mental retardation, X-linked, nonsyndromic",
+    "mental retardation, nonsyndromic, X-linked",
+    "non-specific X-linked intellectual disability",
+    "non-syndromic intellectual disability, X-linked",
+    "nonsyndromic X-linked intellectual disability"
+   ]
+  },
+  {
+   "id": "MONDO:0019587",
+   "name": "autosomal dominant nonsyndromic hearing loss",
+   "genes": [
+    "ABCC1",
+    "ACTG1",
+    "ATP11A",
+    "CCDC50",
+    "CD164",
+    "CEACAM16",
+    "CENPP",
+    "COCH",
+    "COL11A1",
+    "COL11A2",
+    "CRYM",
+    "DIABLO",
+    "DIAPH3",
+    "DMXL2",
+    "ESPN",
+    "EYA4",
+    "GJB2",
+    "GJB3",
+    "GJB6",
+    "GRHL2",
+    "GSDME",
+    "HOMER2",
+    "KCNQ4",
+    "KITLG",
+    "MAP1B",
+    "MCM2",
+    "MIR96",
+    "MYH14",
+    "MYH9",
+    "MYO1C",
+    "MYO6",
+    "MYO7A",
+    "OSBPL2",
+    "P2RX2",
+    "PDE1C",
+    "PLS1",
+    "POU4F3",
+    "PTPRQ",
+    "SIX1",
+    "SLC17A8",
+    "SLC44A4",
+    "TBC1D24",
+    "TECTA",
+    "TJP2",
+    "TMC1",
+    "TNC",
+    "TRRAP",
+    "USP48",
+    "WFS1"
+   ],
+   "direction": "",
+   "mechanism_class": "Signal Transduction",
+   "in_first_ring": false,
+   "synonyms": [
+    "autosomal dominant deafness",
+    "autosomal dominant isolated deafness",
+    "autosomal dominant isolated neurosensory deafness type DFNA",
+    "autosomal dominant isolated neurosensory hearing loss type DFNA",
+    "autosomal dominant isolated sensorineural deafness type DFNA",
+    "autosomal dominant isolated sensorineural hearing loss type DFNA",
+    "autosomal dominant non-syndromic neurosensory deafness type DFNA",
+    "autosomal dominant non-syndromic neurosensory hearing loss type DFNA",
+    "autosomal dominant non-syndromic sensorineural deafness type DFNA",
+    "autosomal dominant non-syndromic sensorineural hearing loss type DFNA",
+    "autosomal dominant nonsyndromic deafness",
+    "autosomal dominant nonsyndromic genetic deafness",
+    "autosomal dominant nonsyndromic hearing impairment",
+    "autosomal dominant nonsyndromic hearing loss and deafness",
+    "deafness, autosomal dominant",
+    "nonsyndromic deafness, autosomal dominant",
+    "nonsyndromic genetic deafness, autosomal dominant"
+   ]
+  },
+  {
+   "id": "MONDO:0019588",
+   "name": "hearing loss, autosomal recessive",
+   "genes": [
+    "ADCY1",
+    "AFG2B",
+    "BDP1",
+    "BSND",
+    "CABP2",
+    "CDC14A",
+    "CDH23",
+    "CEACAM16",
+    "CIB2",
+    "CLDN14",
+    "CLIC5",
+    "COL11A2",
+    "DCDC2",
+    "ELMOD3",
+    "EPS8",
+    "EPS8L2",
+    "ESPN",
+    "ESRRB",
+    "GIPC3",
+    "GJB2",
+    "GJB3",
+    "GJB6",
+    "GPSM2",
+    "GRAP",
+    "GRXCR1",
+    "GRXCR2",
+    "HGF",
+    "ILDR1",
+    "KARS1",
+    "LHFPL5",
+    "LOXHD1",
+    "LRTOMT",
+    "MARVELD2",
+    "MET",
+    "MINAR2",
+    "MPZL2",
+    "MSRB3",
+    "MYO15A",
+    "MYO3A",
+    "MYO6",
+    "MYO7A",
+    "NARS2",
+    "OTOA",
+    "OTOF",
+    "OTOG",
+    "OTOGL",
+    "PCDH15",
+    "PDZD7",
+    "PJVK",
+    "PNPT1",
+    "PPIP5K2",
+    "PTPRQ",
+    "RDX",
+    "RIPOR2",
+    "ROR1",
+    "S1PR2",
+    "SERPINB6",
+    "SLC26A4",
+    "SLC26A5",
+    "SLITRK6",
+    "STRC",
+    "SYNE4",
+    "TBC1D24",
+    "TECTA",
+    "TMC1",
+    "TMEM132E",
+    "TMIE",
+    "TMPRSS3",
+    "TMTC4",
+    "TPRN",
+    "TRIOBP",
+    "USH1C",
+    "WBP2",
+    "WHRN"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Signal Transduction",
+   "in_first_ring": false,
+   "synonyms": [
+    "autosomal recessive isolated neurosensory deafness type DFNB",
+    "autosomal recessive isolated sensorineural deafness type DFNB",
+    "autosomal recessive non-syndromic neurosensory deafness type DFNB",
+    "autosomal recessive non-syndromic sensorineural deafness type DFNB",
+    "autosomal recessive nonsyndromic deafness",
+    "autosomal recessive nonsyndromic genetic deafness",
+    "deafness, autosomal recessive",
+    "deafness, neurosensory nonsyndromic recessive, DFN",
+    "nonsyndromic deafness, autosomal recessive",
+    "nonsyndromic genetic deafness, autosomal recessive"
+   ]
+  },
+  {
+   "id": "MONDO:0030856",
+   "name": "developmental and epileptic encephalopathy 89",
+   "genes": [
+    "GAD1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "DEE89"
+   ]
+  },
+  {
+   "id": "MONDO:0032678",
+   "name": "developmental and epileptic encephalopathy, 71",
+   "genes": [
+    "GLS"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Metabolism",
+   "in_first_ring": true,
+   "synonyms": [
+    "DEE71",
+    "EIEE71",
+    "developmental and epileptic encephalopathy 71",
+    "epileptic encephalopathy, early infantile, 71",
+    "neonatal epileptic encephalopathy due to glutaminase deficiency"
+   ]
+  },
+  {
+   "id": "MONDO:0032685",
+   "name": "infantile cataract, skin abnormalities, glutamate excess, and impaired intellectual development",
+   "genes": [
+    "GLS"
+   ],
+   "direction": "",
+   "mechanism_class": "Metabolism",
+   "in_first_ring": true,
+   "synonyms": [
+    "CASGID"
+   ]
+  },
+  {
+   "id": "MONDO:0032733",
+   "name": "global developmental delay, progressive ataxia, and elevated glutamine",
+   "genes": [
+    "GLS"
+   ],
+   "direction": "",
+   "mechanism_class": "Metabolism",
+   "in_first_ring": false,
+   "synonyms": [
+    "GDPAG"
+   ]
+  },
+  {
+   "id": "MONDO:0032900",
+   "name": "neurodevelopmental disorder with hypotonia and autistic features with or without hyperkinetic movements",
+   "genes": [
+    "VAMP2"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "NEDHAHM"
+   ]
+  },
+  {
+   "id": "MONDO:0033372",
+   "name": "developmental and epileptic encephalopathy, 63",
+   "genes": [
+    "CPLX1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "DEE63",
+    "EIEE63",
+    "developmental and epileptic encephalopathy 63",
+    "epileptic encephalopathy, early infantile, 63"
+   ]
+  },
+  {
+   "id": "MONDO:0033864",
+   "name": "infantile hypotonia-oculomotor anomalies-hyperkinetic movements-developmental delay syndrome",
+   "genes": [
+    "SYT1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "Baker-Gordon syndrome"
+   ]
+  },
+  {
+   "id": "MONDO:0034146",
+   "name": "spastic ataxia-dysarthria due to glutaminase deficiency",
+   "genes": [
+    "GLS"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Metabolism",
+   "in_first_ring": false,
+   "synonyms": []
+  },
+  {
+   "id": "MONDO:0100092",
+   "name": "myoclonus, familial, 2",
+   "genes": [
+    "SCN8A"
+   ],
+   "direction": "",
+   "mechanism_class": "Muscle contraction",
+   "in_first_ring": false,
+   "synonyms": [
+    "MYOCL2"
+   ]
+  },
+  {
+   "id": "MONDO:0100566",
+   "name": "myoclonic epilepsy in infancy",
+   "genes": [
+    "CPLX1",
+    "SCN8A",
+    "TBC1D24"
+   ],
+   "direction": "loss of function",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "MEI",
+    "benign myoclonic epilepsy of infancy",
+    "benign myoclonus epilepsy of infancy"
+   ]
+  },
+  {
+   "id": "MONDO:0800491",
+   "name": "early-infantile DEE",
+   "genes": [
+    "ARX",
+    "CACNA1E",
+    "CASK",
+    "CDKL5",
+    "DMXL2",
+    "GNAO1",
+    "GRIN1",
+    "GRM7",
+    "KCNA1",
+    "LGI1",
+    "NEUROD2",
+    "PIGP",
+    "PIGQ",
+    "PNKP",
+    "RHOBTB2",
+    "SCN1B",
+    "SCN2A",
+    "SIK1",
+    "SLC25A22",
+    "SLC32A1",
+    "TRIM8"
+   ],
+   "direction": "both reported",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": [
+    "EIDEE",
+    "EIEE",
+    "EME",
+    "Ohtahara syndrome",
+    "early infantile epileptic encephalopathy",
+    "early infantile epileptic encephalopathy with suppression-bursts",
+    "early myoclonic encephalopathy",
+    "early myoclonic encephalopathy with suppression-bursts",
+    "early-infantile developmental and epileptic encephalopathy syndrome",
+    "epileptic encephalopathy, early infantile",
+    "epileptic encephalopathy, infantile",
+    "epileptic seizures - myoclonic",
+    "epileptic seizures, myoclonic",
+    "infantile epileptic encephalopathy",
+    "myoclonia epileptica",
+    "myoclonic epilepsy",
+    "myoclonic seizure",
+    "myoclonic seizure disorder",
+    "myoclonus epilepsy"
+   ]
+  },
+  {
+   "id": "MONDO:0957539",
+   "name": "dystonia 22, juvenile-onset",
+   "genes": [
+    "TSPOAP1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": []
+  },
+  {
+   "id": "MONDO:0957542",
+   "name": "dystonia 22, adult-onset",
+   "genes": [
+    "TSPOAP1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": []
+  },
+  {
+   "id": "MONDO:0958324",
+   "name": "generalized epilepsy with febrile seizures plus, type 12",
+   "genes": [
+    "SLC32A1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": false,
+   "synonyms": []
+  },
+  {
+   "id": "MONDO:0958331",
+   "name": "developmental and epileptic encephalopathy 114",
+   "genes": [
+    "SLC32A1"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": []
+  },
+  {
+   "id": "MONDO:1040014",
+   "name": "PPFIA3-related neurodevelopmental disorder",
+   "genes": [
+    "PPFIA3"
+   ],
+   "direction": "",
+   "mechanism_class": "Neuronal System",
+   "in_first_ring": true,
+   "synonyms": []
+  }
+ ]
+}

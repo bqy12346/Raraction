@@ -1,0 +1,436 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}</style>
+<title>Rare Disease Atlas Journey</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Follows the brief's journey: one search, then disease -> connection -> reusable asset -> collaborator -> next step.
+     Every claim on screen opens its edge: source, evidence type, confidence, quote, contradictions. */
+  :root {
+    --bg: #f4f7f8; --surface: #fcfcfb; --fg: #14242b; --muted: #55686f; --line: #c6d1d6; --bar: #1d3640; --soft: #e8eef0;
+    --ok: #1a7f52; --maybe: #b26b00; --no: #c0392b; --info: #2a78d6; --weak: #8a979c;
+    --observed: #1a7f52; --extracted: #2a78d6; --inferred: #b26b00;
+    --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10181c; --surface: #1a1a19; --fg: #e4ecee; --muted: #94a6ac; --line: #35474e; --bar: #cfdde2; --soft: #1f2a2f;
+      --ok: #3fb37f; --maybe: #e0a030; --no: #e66767; --info: #5b9fec; --weak: #77858a;
+      --observed: #3fb37f; --extracted: #5b9fec; --inferred: #e0a030; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10181c; --surface: #1a1a19; --fg: #e4ecee; --muted: #94a6ac; --line: #35474e; --bar: #cfdde2; --soft: #1f2a2f;
+    --ok: #3fb37f; --maybe: #e0a030; --no: #e66767; --info: #5b9fec; --weak: #77858a;
+    --observed: #3fb37f; --extracted: #5b9fec; --inferred: #e0a030; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+  .page { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 64px; display: flex; flex-direction: column; gap: 14px; }
+  .titlebar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 28px); margin: 0; line-height: 1.1; }
+  h2 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; line-height: 1.25; overflow-wrap: anywhere; }
+  h3 { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  p { margin: 0; }
+  a { color: inherit; }
+  .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .personas { display: flex; flex-wrap: wrap; gap: 6px; }
+  .personas button, .btn { font: inherit; font-size: 13px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+  .personas button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .personas small { color: inherit; opacity: .7; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .searchbox { position: relative; }
+  #q { font: inherit; font-size: 16px; width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); }
+  #hits { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 10; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; max-height: 360px; overflow-y: auto; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+  #hits button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; padding: 7px 12px; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; border-bottom: 1px solid var(--line); }
+  #hits button:hover, #hits button:focus-visible { background: var(--soft); }
+  #hits .kind { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; padding-top: 2px; }
+  #hits small { color: var(--muted); display: block; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 14px; align-items: start; }
+  @media (max-width: 980px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .step { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 13px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; overflow-wrap: anywhere; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 1px 8px; border: 1px solid currentColor; white-space: nowrap; }
+  .v-supported { color: var(--ok); } .v-plausible { color: var(--info); } .v-same { color: var(--muted); } .v-counter { color: var(--no); } .v-weak { color: var(--weak); }
+  .l-confirmed { color: var(--ok); } .l-suggested { color: var(--maybe); } .l-unknown { color: var(--weak); }
+  .e-observed { color: var(--observed); } .e-extracted { color: var(--extracted); } .e-inferred { color: var(--inferred); }
+  .ev { all: unset; cursor: pointer; font-family: var(--mono); font-size: 11px; border-bottom: 1px dotted currentColor; margin-left: 4px; white-space: nowrap; }
+  .ev:hover { color: var(--fg); }
+  ul.plain { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+  ul.plain > li { padding: 7px 0; border-top: 1px solid var(--line); }
+  ul.plain > li:first-child { border-top: 0; }
+  .lead { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 6px; border-radius: 4px; }
+  .lead:hover, .lead[aria-pressed="true"] { background: var(--soft); }
+  .lead small { color: var(--muted); grid-column: 1 / -1; }
+  .map svg { display: block; width: 100%; height: auto; font-family: var(--body); }
+  .map .lk { stroke: var(--muted); stroke-width: 1.4; }
+  .map .lk.inferred { stroke-dasharray: 5 4; }
+  .map .nd { stroke: var(--surface); stroke-width: 2; cursor: pointer; }
+  .map .nd.me { stroke: var(--fg); stroke-width: 2.5; cursor: default; }
+  .map text { fill: var(--fg); font-size: 12px; }
+  .map text.m { fill: var(--muted); font-size: 11px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+  .chain .node { border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; background: var(--bg); }
+  .chain .arrow { all: unset; cursor: pointer; font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 2px 4px; border-radius: 3px; }
+  .chain .arrow:hover { background: var(--soft); color: var(--fg); }
+  .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .twin { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .box strong { font-size: 13px; }
+  .note { border: 1px dashed var(--line); border-radius: 6px; padding: 10px 14px; color: var(--muted); font-size: 13px; }
+  .note strong { color: var(--fg); }
+  .proposal { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .meter i { display: block; height: 100%; background: var(--bar); border-radius: 3px; }
+  blockquote { margin: 0; padding: 6px 10px; border-left: 3px solid var(--line); color: var(--fg); font-size: 13px; background: var(--bg); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .scroll { overflow-x: auto; }
+  #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(0,0,0,.18);
+            z-index: 30; padding: 18px 16px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  #drawer[hidden] { display: none; }
+  .x { align-self: flex-end; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+</style>
+
+<div class="page">
+  <div class="titlebar">
+    <h1>Rare disease atlas</h1>
+    <span class="tag">From a diagnosis to a shared next step · STXBP1 slice</span>
+    <span class="tag" id="totals"></span>
+  </div>
+  <div class="personas" role="group" aria-label="View as" id="personas">
+    <button data-p="maria" aria-pressed="true">Maria <small>patient group leader</small></button>
+    <button data-p="devon" aria-pressed="false">Devon <small>newly diagnosed family</small></button>
+    <button data-p="priya" aria-pressed="false">Priya <small>biotech scout</small></button>
+    <button data-p="osei" aria-pressed="false">Dr. Osei <small>researcher</small></button>
+  </div>
+  <div class="searchbox">
+    <input id="q" type="text" autocomplete="off" placeholder="Search a disease, gene, symptom, patient group, pathway or study, for example STXBP1, Ohtahara or hypotonia" aria-label="Search the atlas">
+    <div id="hits" hidden></div>
+  </div>
+  <div id="main"></div>
+  <p class="note"><strong>How to read this.</strong> <span class="e-observed">Observed</span> links come straight from a database or a verified web page.
+    <span class="e-extracted">Extracted</span> links were read out of a paper abstract by an OpenAI model; the quote is checked word for word against the abstract.
+    <span class="e-inferred">Inferred</span> links are proposals computed from the graph and need a person to check them. Click any underlined source to see the evidence.
+    Researchers are matched across sources by surname and initial, which is not verified. For research use only, not medical advice.</p>
+</div>
+<aside id="drawer" hidden aria-label="Evidence"></aside>
+
+<script>
+const V = __DATA__;
+const N = V.nodes, E = V.edges, X = V.explanations || {};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const nm = id => N[id] ? N[id].n : id;
+const dn = id => cap(nm(id));
+const MECH = { loss_of_function: 'loss of function', gain_of_function: 'gain of function', dominant_negative: 'dominant negative', missense_driven: 'missense-driven, direction not settled' };
+const MECH_PLAIN = { loss_of_function: 'the gene\'s protein is missing or works less', gain_of_function: 'the protein works too much or in a new way',
+                     dominant_negative: 'the altered protein blocks the normal one', missense_driven: 'mostly single-letter changes; how they act is not settled' };
+const VERDICT = { 'supported lead': ['v-supported', 'Supported lead'], 'plausible lead': ['v-plausible', 'Plausible lead'], 'same gene': ['v-same', 'Same gene'],
+                  'counterexample': ['v-counter', 'Different mechanism'], 'weak lead': ['v-weak', 'Weak lead'] };
+const VCOL = { 'supported lead': 'var(--ok)', 'plausible lead': 'var(--info)', 'same gene': 'var(--muted)', 'counterexample': 'var(--no)', 'weak lead': 'var(--weak)' };
+const PRED = { gene_associated_with_condition: 'causes', has_phenotype: 'has symptom', participates_in: 'acts in pathway', similar_mechanism_and_phenotype: 'resembles',
+  variant_of: 'is a variant of', causes_condition: 'causes', mechanism_suggested_by_variant_spectrum: 'variant pattern suggests', studies_gene: 'studies',
+  studies_condition: 'studies', tests_intervention: 'tests', sponsors_study: 'sponsors', leads_study: 'leads', affiliated_with: 'works at', mentions_gene: 'is about',
+  authored: 'wrote', funds_research_on: 'funds research on', funds: 'funds', awarded_to: 'is held at', leads_grant: 'leads grant', serves_community: 'serves families with',
+  supports_study: 'supports', member_of: 'is a member of', co_funds: 'co-funds', runs_registry: 'runs a registry for', partners_with: 'partners with',
+  enrolls_gene: 'enrolls people with', has_mechanism: 'acts by', caused_by_mechanism: 'is caused by', describes_asset: 'describes', asset_for_gene: 'is a resource for' };
+const KIND = { patient_groups: 'Patient groups and registries', studies: 'Studies and trials', grants: 'Funded research', researchers: 'Researchers',
+               papers: 'Papers', assets: 'Models and assets', funders: 'Funders', sponsors: 'Sponsors' };
+let persona = 'maria', current = V.seed, lead = null;
+
+const coverage = V.coverage;
+$('totals').textContent = `${Object.values(coverage.nodes).reduce((a, b) => a + b, 0).toLocaleString()} nodes · ${coverage.edges.toLocaleString()} links · ` +
+  Object.entries(coverage.evidence_types).map(([k, v]) => `${v.toLocaleString()} ${k}`).join(' · ');
+
+// ---------------------------------------------------------------- evidence
+function ev(id, label) {
+  const e = E[id]; if (!e) return '';
+  return `<button class="ev e-${e[7]}" data-ev="${esc(id)}" title="${esc(e[7])} · ${esc(e[3])}">${esc(label || e[3])}</button>`;
+}
+const evs = (ids, max = 4) => [...new Set(ids)].filter(i => E[i]).slice(0, max).map(i => ev(i)).join('') + (ids.length > max ? `<span class="muted small"> +${ids.length - max}</span>` : '');
+function openEdge(id) {
+  const e = E[id]; if (!e) return;
+  const [s, p, o, src, sid, url, date, et, code, conf, quote, contra, a] = e;
+  const d = $('drawer');
+  d.innerHTML = `<button class="btn x" id="close">Close</button>
+    <h3>Evidence</h3>
+    <h2>${esc(dn(s))} <span class="muted">${esc(PRED[p] || p)}</span> ${esc(dn(o))}</h2>
+    <p><span class="badge e-${et}">${esc(et)}</span> ${et === 'inferred' ? '<span class="small muted">a proposal computed from the graph; check before acting</span>' :
+      et === 'extracted' ? '<span class="small muted">read from the abstract by a model; quote verified word for word</span>' : '<span class="small muted">stated by the source</span>'}</p>
+    ${a.statement ? `<p>${esc(a.statement)}</p>` : ''}
+    ${quote ? `<blockquote>“${esc(quote)}”</blockquote>` : ''}
+    <dl class="kv"><dt>Source</dt><dd>${url && url.startsWith('http') ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(src)} ${esc(sid)}</a>` : esc(src + ' · ' + url)}</dd>
+      <dt>Retrieved</dt><dd>${esc(date)}</dd>${code ? `<dt>Evidence code</dt><dd>${esc(code)}</dd>` : ''}
+      ${conf ? `<dt>Confidence</dt><dd><div class="meter" style="width:120px;display:inline-block;vertical-align:middle"><i style="width:${Math.round(conf * 100)}%"></i></div> ${esc(conf)}</dd>` : ''}
+      ${a.evidence_level ? `<dt>Evidence from</dt><dd>${esc(a.evidence_level.replace(/_/g, ' '))}</dd>` : ''}
+      ${a.mechanism_similarity != null ? `<dt>Scores</dt><dd>mechanism ${a.mechanism_similarity} · phenotype ${a.phenotype_similarity}</dd>` : ''}
+      ${a.shared_pathways ? `<dt>Shared pathways</dt><dd>${esc(a.shared_pathways.join('; '))}</dd>` : ''}
+      ${a.shared_symptoms ? `<dt>Shared symptoms</dt><dd>${esc(a.shared_symptoms.join('; '))}</dd>` : ''}
+      ${a.n_pathogenic ? `<dt>Variants</dt><dd>${a.n_truncating} of ${a.n_pathogenic} pathogenic variants truncate the protein; ${a.n_missense} are missense</dd><dt>Rule</dt><dd>${esc(a.rule)}</dd>` : ''}
+      ${a.affiliation ? `<dt>Affiliation</dt><dd>${esc(a.affiliation)}</dd>` : ''}
+      ${a.model ? `<dt>Model</dt><dd>${esc(a.model)}</dd>` : ''}</dl>
+    ${contra ? `<div><h3>Contradicted by</h3><p>${contra.split('|').map(c => ev(c, (E[c] ? nm(E[c][2]) + ' · ' + E[c][4] : c))).join(' ')}</p></div>` : ''}`;
+  d.hidden = false; $('close').focus();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-ev]'); if (b) { openEdge(b.dataset.ev); return; }
+  if (e.target.id === 'close') $('drawer').hidden = true;
+  const s = e.target.closest('[data-d]'); if (s) { select(s.dataset.d); return; }
+  const l = e.target.closest('[data-lead]'); if (l) { lead = l.dataset.lead; render(); document.getElementById('leadcard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const n = e.target.closest('[data-node]'); if (n) { showNode(n.dataset.node); return; }
+  if (!e.target.closest('.searchbox')) $('hits').hidden = true;
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('drawer').hidden = true; });
+
+// ---------------------------------------------------------------- search
+const q = $('q'), hits = $('hits');
+const searchable = V.search.map(([label, id, kind, extra]) => ({ label, id, kind, extra, hay: [label, ...(kind === 'symptom' ? [] : extra || [])].join(' | ').toLowerCase() }));
+const KORDER = { gene: 0, disease: 1, organization: 2, symptom: 3, pathway: 4, mechanism: 5, study: 6, intervention: 7 };
+q.addEventListener('input', () => {
+  const s = q.value.trim().toLowerCase(); if (s.length < 2) { hits.hidden = true; return; }
+  const out = searchable.filter(x => x.hay.includes(s)).map(x => [x.label.toLowerCase() === s ? 0 : x.label.toLowerCase().startsWith(s) ? 1 : 2, KORDER[x.kind] ?? 9, x])
+    .sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 14).map(o => o[2]);
+  hits.innerHTML = out.map((x, k) => {
+    const syn = x.kind !== 'symptom' && x.extra && !x.label.toLowerCase().includes(s) ? (x.extra.find(y => y.toLowerCase().includes(s)) || '') : '';
+    const sub = x.kind === 'symptom' ? `${x.extra.length} disease${x.extra.length > 1 ? 's' : ''} in this slice` : syn ? `matched synonym: ${syn}` : x.kind === 'gene' ? x.extra[0] : '';
+    return `<button data-k="${k}"><span class="kind">${esc(x.kind)}</span><span>${esc(cap(x.label))}<small>${esc(sub)}</small></span></button>`;
+  }).join('') || `<p style="padding:8px 12px" class="muted">Nothing in this slice matches. The slice covers the STXBP1 disease, its 12 atlas neighbours and every disease their genes cause; the full atlas view covers 7,999 diseases.</p>`;
+  hits.hidden = false; hits._out = out;
+});
+hits.addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]'); if (!b) return;
+  const x = hits._out[+b.dataset.k]; hits.hidden = true; q.value = '';
+  if (x.kind === 'disease') select(x.id);
+  else if (x.kind === 'gene') { const ds = Object.keys(V.diseases).filter(d => V.diseases[d].genes.includes(x.id)).sort((a, b) => (N[b].a.first_ring ? 1 : 0) - (N[a].a.first_ring ? 1 : 0) || V.diseases[a].genes.length - V.diseases[b].genes.length); select(ds[0]); }
+  else if (x.kind === 'symptom') showSymptom(x.label, x.extra);
+  else showNode(x.id);
+});
+
+function select(d) { current = d; lead = null; $('drawer').hidden = true; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+// the address keeps the place, so a walkthrough can link straight to a lead: #d=MONDO:...&lead=MONDO:...&p=devon
+function readHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('d') && V.diseases[h.get('d')]) current = h.get('d');
+  lead = h.get('lead') && V.diseases[current].leads.some(l => l.disease === h.get('lead')) ? h.get('lead') : null;
+  if (['maria', 'devon', 'priya', 'osei'].includes(h.get('p'))) persona = h.get('p');
+  document.querySelectorAll('#personas button').forEach(x => x.setAttribute('aria-pressed', x.dataset.p === persona));
+}
+function writeHash() { history.replaceState(null, '', '#' + new URLSearchParams({ d: current, ...(lead ? { lead } : {}), p: persona })); }
+document.getElementById('personas').addEventListener('click', e => {
+  const b = e.target.closest('button[data-p]'); if (!b) return;
+  persona = b.dataset.p; document.querySelectorAll('#personas button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
+});
+
+// ---------------------------------------------------------------- pieces
+const mechBadge = m => m.label ? `<span class="badge l-${m.level || 'confirmed'}">${esc(m.level || 'confirmed')}</span> ${esc(MECH[m.label] || m.label)}` : '<span class="badge l-unknown">unknown</span>';
+function communityOf(d, kind) {
+  const out = {};
+  for (const h of V.diseases[d].genes) for (const [n, eids] of Object.entries(V.genes[h].community[kind] || {})) (out[n] = out[n] || []).push(...eids);
+  return out;
+}
+function listItems(items, max = 6, extra = () => '') {
+  const ent = Object.entries(items);
+  if (!ent.length) return '<p class="muted small">None found.</p>';
+  return `<ul class="plain">${ent.slice(0, max).map(([n, eids]) => `<li><button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-node="${esc(n)}">${esc(cap(nm(n)))}</button>
+    ${extra(n)}<span class="small">${evs(eids, 2)}</span></li>`).join('')}</ul>${ent.length > max ? `<p class="muted small">and ${ent.length - max} more</p>` : ''}`;
+}
+const studyNote = n => { const a = N[n]?.a || {}; return a.asset_type ? `<span class="small muted"> · ${esc(a.asset_type)}${a.status ? ' · ' + esc(a.status.toLowerCase().replace(/_/g, ' ')) : ''}${a.phases && a.phases.length ? ' · ' + esc(a.phases.join('/').toLowerCase()) : ''}</span>` : ''; };
+const groupNote = n => { const a = N[n]?.a || {}; return a.org_kind ? `<span class="small muted"> · ${esc(a.org_kind)}</span>` : ''; };
+
+function diseaseCard(d) {
+  const info = V.diseases[d], m = info.mechanism;
+  const genes = info.genes.map(h => `<button class="ev" style="font-family:var(--body);font-size:13px" data-node="${h}">${esc(nm(h))}</button>`).join(', ');
+  const syn = (N[d].a.synonyms || []).slice(0, 5).join(' · ');
+  const gm = info.genes.map(h => V.genes[h].mechanism).find(x => x.contested);
+  return `<div class="card"><span class="step">1 · Your disease</span><h2>${esc(dn(d))}</h2>${syn ? `<p class="small muted">Also called: ${esc(syn)}</p>` : ''}
+    <dl class="kv"><dt>Gene</dt><dd>${genes || '<span class="muted">none in this slice</span>'}${info.genes.length > 3 ? ' <span class="small muted">(umbrella disease)</span>' : ''}</dd>
+      <dt>Mechanism</dt><dd>${mechBadge(m)} ${evs(m.evidence, 3)}${m.label ? `<br><span class="small muted">${esc(MECH_PLAIN[m.label] || '')}${m.basis ? ' · from ' + esc({ paper: 'papers', orphanet: 'Orphanet', 'gene clinvar': 'the ClinVar variant pattern of the gene', 'gene paper': 'papers on the gene', 'gene orphanet': 'Orphanet, gene level' }[m.basis] || m.basis) : ''}</span>` : m.note ? `<br><span class="small muted">${esc(m.note)}</span>` : ''}
+        ${gm ? `<br><span class="small" style="color:var(--no)">Papers disagree: ${esc(Object.keys(gm.weights).map(k => MECH[k] || k).join(' vs '))}</span>` : ''}</dd>
+      <dt>Symptoms</dt><dd>${info.n_symptoms ? esc(info.symptoms.slice(0, 5).join(', ')) + (info.n_symptoms > 5 ? ` <span class="muted small">and ${info.n_symptoms - 5} more</span>` : '') : '<span class="muted">none recorded</span>'}</dd>
+      <dt>Identifier</dt><dd><a href="https://monarchinitiative.org/${esc(d)}" target="_blank" rel="noopener">${esc(d)}</a></dd></dl></div>`;
+}
+
+function communityCard(d, title, step) {
+  const groups = communityOf(d, 'patient_groups'), studies = communityOf(d, 'studies');
+  return `<div class="card"><span class="step">${step}</span><h2>${title}</h2>
+    <h3>Patient groups and registries</h3>${listItems(groups, 6, groupNote)}
+    <h3>Studies, registries and trials</h3>${listItems(studies, 6, studyNote)}</div>`;
+}
+
+function mapCard(d) {
+  const ls = V.diseases[d].leads, cx = 300, cy = 190, S = [];
+  const pos = ls.map((l, k) => { const a = -Math.PI / 2 + 2 * Math.PI * k / Math.max(ls.length, 1), r = 70 + (1 - l.score / Math.max(...ls.map(x => x.score), .01)) * 90; return [cx + r * Math.cos(a) * 1.5, cy + r * Math.sin(a)]; });
+  ls.forEach((l, k) => S.push(`<line class="lk inferred" x1="${cx}" y1="${cy}" x2="${pos[k][0]}" y2="${pos[k][1]}" style="stroke:${VCOL[l.verdict]}"/>`));
+  ls.forEach((l, k) => S.push(`<circle class="nd" data-lead="${esc(l.disease)}" cx="${pos[k][0]}" cy="${pos[k][1]}" r="${9 + l.score * 14}" style="fill:${VCOL[l.verdict]}"><title>${esc(dn(l.disease))} · ${esc(l.verdict)}</title></circle>`,
+    `<text class="m" x="${pos[k][0] + 12 + l.score * 14}" y="${pos[k][1] + 4}">${esc((V.diseases[l.disease].genes.map(nm).join(', ') || '').slice(0, 18))}</text>`));
+  S.push(`<circle class="nd me" cx="${cx}" cy="${cy}" r="14" style="fill:var(--bar)"/><text x="${cx}" y="${cy + 32}" text-anchor="middle" style="font-weight:600">${esc(V.diseases[d].genes.map(nm).join(', ').slice(0, 30))}</text>`);
+  if (!ls.length) S.push(`<text class="m" x="${cx}" y="${cy - 30}" text-anchor="middle">No neighbour shares both a specific pathway and symptoms.</text>`);
+  const used = [...new Set(ls.map(l => l.verdict))];
+  return `<div class="card"><div class="map"><svg viewBox="0 0 600 380" role="img" aria-label="Neighbouring diseases, coloured by verdict">${S.join('')}</svg></div>
+    <div class="legend">${used.map(v => `<span><i class="dot" style="background:${VCOL[v]}"></i>${esc(VERDICT[v][1])}</span>`).join('')}<span>Dashed = inferred · larger and closer = more similar</span></div></div>`;
+}
+
+function leadsCard(d) {
+  const ls = V.diseases[d].leads;
+  return `<div class="card"><span class="step">2 · Who shares your disease characteristics?</span><h2>Connected diseases</h2>
+    <p class="small muted">Each neighbour shares a specific pathway and overlapping symptoms. The verdict asks two questions: could the groups share infrastructure (similar symptoms), and could they share a treatment approach (same mechanism)?</p>
+    ${ls.length ? `<div>${ls.map(l => { const [c, t] = VERDICT[l.verdict];
+      return `<button class="lead" data-lead="${esc(l.disease)}" aria-pressed="${lead === l.disease}"><span>${esc(dn(l.disease))}</span><span class="badge ${c}">${t}</span>
+        <small>${esc(V.diseases[l.disease].genes.map(nm).join(', '))} · treatment approach: ${esc(l.treatment)} · infrastructure: ${esc(l.infrastructure)}${l.bridges.length ? ` · ${l.bridges.length} existing connection${l.bridges.length > 1 ? 's' : ''}` : ''}</small></button>`; }).join('')}</div>`
+      : '<p class="muted">No supported route: no disease in the atlas shares both a specific pathway and overlapping symptoms with this one. See what is unknown below.</p>'}</div>`;
+}
+
+function chain(d, l) {
+  const e = E[l.edge], parts = [];
+  const [ga, gb] = l.via_genes.length ? l.via_genes : [V.diseases[d].genes[0], V.diseases[l.disease].genes[0]];
+  const path = l.path.slice(1);
+  const pathway = l.shared_pathways[0];
+  const find = (s, o) => l.path.find(i => E[i] && ((E[i][0] === s && E[i][2] === o) || (E[i][0] === o && E[i][2] === s)));
+  parts.push(`<span class="node">${esc(dn(d))}</span>`, `<button class="arrow" data-ev="${find(ga, d) || ''}">← caused by</button>`, `<span class="node">${esc(nm(ga))}</span>`);
+  if (pathway) parts.push(`<button class="arrow" data-ev="${find(ga, pathway) || ''}">acts in →</button>`, `<span class="node">${esc(nm(pathway))}</span>`, `<button class="arrow" data-ev="${find(gb, pathway) || ''}">← acts in</button>`);
+  parts.push(`<span class="node">${esc(nm(gb))}</span>`, `<button class="arrow" data-ev="${find(gb, l.disease) || ''}">causes →</button>`, `<span class="node">${esc(dn(l.disease))}</span>`);
+  return `<div class="chain">${parts.join('')}</div><p class="small muted">Similarity of the two diseases: ${ev(l.edge, 'inferred, see scores')}</p>`;
+}
+
+function cited(items) { return items && items.length ? `<ul class="plain">${items.map(it => `<li>${esc(it.text)} <span class="small">${evs(it.edge_ids, 3)}</span></li>`).join('')}</ul>` : '<p class="muted small">Nothing the evidence supports.</p>'; }
+
+function leadCard(d, l) {
+  const x = X[`${d}|${l.disease}`], [c, t] = VERDICT[l.verdict];
+  const nGroups = l.neighbour_groups.length, nStudies = l.neighbour_studies.length;
+  const mechRow = (who, i) => `<div class="box"><strong>${esc(who)}</strong><span>${l.mechanism[i] ? `<span class="badge l-${l.mechanism_level[i]}">${esc(l.mechanism_level[i])}</span> ${esc(MECH[l.mechanism[i]] || l.mechanism[i])}` : '<span class="badge l-unknown">unknown</span>'}</span></div>`;
+  const reusable = [...l.bridges.map(b => [b, 'already shared']), ...l.neighbour_studies.map(s => [s, 'their study']), ...l.neighbour_groups.map(g => [g, 'their group'])].filter(([n], i, a) => a.findIndex(x => x[0] === n) === i);
+  return `<div class="card" id="leadcard"><span class="step">3 · Why are they connected, and what can you do together?</span>
+    <h2>${esc(dn(d))} ↔ ${esc(dn(l.disease))}</h2><p><span class="badge ${c}">${t}</span></p>
+    ${chain(d, l)}
+    <div class="twin">${mechRow(nm(l.via_genes[0] || V.diseases[d].genes[0]), 0)}${mechRow(nm(l.via_genes[1] || V.diseases[l.disease].genes[0]), 1)}</div>
+    <p class="small muted">${evs(l.mechanism_evidence, 6)}</p>
+    <div><h3>Why this verdict</h3><ul class="plain">${l.reasons.map(r => `<li class="small">${esc(cap(r))}</li>`).join('')}</ul></div>
+    ${x ? `<div><h3>In plain words <span class="muted">· written by ${esc(x.model)} from the cited edges</span></h3>${cited(x.for_family)}</div>
+      <div class="twin"><div class="box"><strong>What could be reused</strong>${cited(x.reusable)}</div><div class="box"><strong>What differs or is unknown</strong>${cited(x.differs)}</div></div>
+      <div><h3>Questions for an expert</h3><ul class="plain">${x.expert_questions.map(qq => `<li class="small">${esc(qq)}</li>`).join('')}</ul></div>
+      <div class="box" style="border-color:var(--ok)"><strong>4 · Next step this week</strong><span>${esc(x.next_step.action)}</span><span class="small muted">Contact: ${esc(x.next_step.who)} ${evs(x.next_step.edge_ids, 3)}</span></div>
+      <details><summary>Draft message to the partner</summary><p class="proposal" id="prop">${esc(x.proposal)}</p><button class="btn" id="copy">Copy message</button></details>`
+    : `<div><h3>What could be reused</h3>${reusable.length ? `<ul class="plain">${reusable.slice(0, 8).map(([n, why]) => `<li><button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-node="${esc(n)}">${esc(cap(nm(n)))}</button> <span class="small muted">· ${why}${studyNote(n)}</span></li>`).join('')}</ul>` : '<p class="muted small">No group, study or shared researcher found for the neighbour.</p>'}</div>
+      <div class="box" style="border-color:var(--ok)"><strong>4 · Next step</strong><span>${l.verdict === 'counterexample' ? 'Do not plan a shared treatment: the mechanisms point in opposite directions. Symptom data and registries may still be shared.' :
+        nGroups ? `Contact ${esc(nm(l.neighbour_groups[0]))} with the shared pathway and symptom overlap, and ask whether their registry collects the same outcome measures.` :
+        nStudies ? `Ask the team behind ${esc(nm(l.neighbour_studies[0]))} whether its design or data could include your families.` :
+        'No group or study exists for the neighbour yet. Ask a clinician to confirm the mechanism before reaching out.'}</span>
+        <span class="small muted">Plain-language explanation and a draft message appear here after the OpenAI explain step runs.</span></div>`}</div>`;
+}
+
+function bridgesCard(d) {
+  const gs = new Set(V.diseases[d].genes), bs = V.bridges.filter(b => b.genes.some(h => gs.has(h)));
+  const show = bs.filter(b => b.type !== 'funder').slice(0, 10);
+  return `<div class="card"><span class="step">Network overlap</span><h2>Who already connects your community to others</h2>
+    <p class="small muted">A person, group or study tied to your gene and to another gene in this slice. Funders that support almost everything are left out.</p>
+    ${show.length ? `<ul class="plain">${show.map(b => `<li><button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-node="${esc(b.node)}">${esc(cap(nm(b.node)))}</button>
+      <span class="small muted">· ${esc(b.type)}${b.identity_unverified ? ', identity not verified' : ''}</span><br><span class="small">${b.genes.map(h => `${esc(nm(h))} ${evs(b.edges[nm(h)], 1)}`).join(' · ')}</span></li>`).join('')}</ul>` : '<p class="muted small">No shared person, group or study found.</p>'}</div>`;
+}
+
+function gapsCard(d) {
+  const info = V.diseases[d], g = X['gap|' + d];
+  const LABEL = { patient_groups: 'No patient group or registry', studies: 'No study or trial', grants: 'No NIH-funded project', papers: 'No paper on the gene\'s mechanism',
+                  assets: 'No model or other research asset', mechanism: 'Mechanism not established', neighbours: 'No neighbouring disease' };
+  if (!info.gaps.length) return '';
+  return `<div class="card"><span class="step">What we do not know</span><h2>Gaps in the evidence</h2>
+    ${g ? `<p>${esc(g.summary)}</p>` : ''}
+    <ul class="plain">${info.gaps.map(x => `<li><strong class="small">${esc(LABEL[x.missing] || x.missing)}</strong><br><span class="small muted">Searched: ${esc(x.searched)}</span></li>`).join('')}</ul>
+    ${g ? `<div class="box"><strong>Next question to test</strong><span>${esc(g.next_question)}</span><span class="small muted">${esc(g.how_to_help)}</span></div>` : ''}</div>`;
+}
+
+function counterCard() {
+  if (!V.counterexamples.length) return '';
+  return `<div class="card"><span class="step">Counterexample</span><h2>Same gene, different mechanisms</h2>
+    <p class="small muted">A gene name is only the starting point: these diseases share a gene but the variants act in opposite directions, so they need different strategies.</p>
+    <ul class="plain">${V.counterexamples.map(c => `<li><strong>${esc(nm(c.gene))}</strong>: ${c.diseases.map((x, i) => `<button class="ev" style="font-family:var(--body);font-size:13px" data-d="${x}">${esc(dn(x))}</button> <span class="small muted">(${esc(MECH[c.mechanisms[i]])})</span>`).join(' vs ')} <span class="small">${evs(c.evidence, 4)}</span></li>`).join('')}</ul></div>`;
+}
+
+// ---------------------------------------------------------------- persona views
+function devonView(d) {
+  const info = V.diseases[d], groups = communityOf(d, 'patient_groups');
+  const near = info.leads.filter(l => l.neighbour_groups.length).slice(0, 4);
+  return `<div class="cols"><div class="stack">${diseaseCard(d)}
+    <div class="card"><span class="step">For your family</span>
+      ${Object.keys(groups).length ? `<h2>Here is the patient community for this diagnosis</h2>${listItems(groups, 6, groupNote)}`
+        : `<h2>No patient group for this exact diagnosis was found</h2><p>We searched patient organisation sites, NORD and Rare Epilepsy Network listings. ${near.length ? 'These communities work on a related disease and may welcome you:' : 'No related community was found either.'}</p>
+           ${near.length ? `<ul class="plain">${near.map(l => `<li>${l.neighbour_groups.map(gg => `<button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-node="${esc(gg)}">${esc(nm(gg))}</button>`).join(', ')} <span class="small muted">· for ${esc(dn(l.disease))}, ${esc(VERDICT[l.verdict][1].toLowerCase())}</span></li>`).join('')}</ul>` : ''}
+           <p class="small muted">To help build the missing community: register with a cross-gene registry such as Simons Searchlight or RARE-X, and ask your genetic counsellor to share your variant in ClinVar.</p>`}
+    </div></div><div class="stack">${communityCard(d, 'Research you could join', 'Studies and registries')}${gapsCard(d)}</div></div>`;
+}
+
+function priyaView() {
+  const order = ['loss_of_function', 'gain_of_function', 'dominant_negative', 'missense_driven'];
+  const sel = priyaView.m || 'loss_of_function';
+  const rows = Object.keys(V.genes).map(h => ({ h, m: V.genes[h].mechanism, c: V.genes[h].community })).filter(r => r.m.label === sel || (r.m.weights && r.m.weights[sel]))
+    .sort((a, b) => (b.m.label === sel) - (a.m.label === sel) || (b.m.weights[sel] || 0) - (a.m.weights[sel] || 0));
+  const n = (c, k) => Object.keys(c[k] || {}).length;
+  return `<div class="card"><span class="step">Mechanism search</span><h2>Which clusters could a ${esc(MECH[sel])} approach treat?</h2>
+    <div class="personas">${order.map(m => `<button data-mech="${m}" aria-pressed="${m === sel}">${esc(MECH[m])}</button>`).join('')}</div>
+    <p class="small muted">Genes ranked by the strength of evidence for this mechanism, with the patient groups, studies and funded labs already in place.</p>
+    <div class="scroll"><table><thead><tr><th>Gene</th><th>Evidence</th><th>Diseases</th><th>Groups</th><th>Studies</th><th>Grants</th><th>Researchers</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td><strong>${esc(nm(r.h))}</strong>${r.m.contested ? ' <span class="badge v-counter">contested</span>' : ''}</td><td class="small">${esc(r.m.basis)} ${evs(r.m.evidence, 2)}</td>
+      <td class="small">${Object.keys(V.diseases).filter(d => V.diseases[d].genes.includes(r.h) && V.diseases[d].genes.length <= 3).map(d => `<button class="ev" style="font-family:var(--body)" data-d="${d}">${esc(dn(d))}</button>`).join('<br>')}</td>
+      <td>${n(r.c, 'patient_groups')}</td><td>${n(r.c, 'studies')}</td><td>${n(r.c, 'grants')}</td><td>${n(r.c, 'researchers')}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">No gene in this slice has evidence for this mechanism.</td></tr>'}
+    </tbody></table></div></div>`;
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-mech]'); if (b) { priyaView.m = b.dataset.mech; render(); } });
+
+function oseiView(d) {
+  const people = communityOf(d, 'researchers');
+  const gs = new Set(V.diseases[d].genes);
+  const bridging = V.bridges.filter(b => b.type === 'researcher' && b.genes.some(h => gs.has(h)));
+  return `<div class="cols"><div class="stack">${diseaseCard(d)}
+    <div class="card"><span class="step">Who else works on this mechanism</span><h2>Researchers across gene names</h2>
+      <p class="small muted">People tied to this gene and to another gene in the same slice, through papers, NIH grants or study leadership. Matched by surname and initial.</p>
+      ${bridging.length ? `<ul class="plain">${bridging.slice(0, 12).map(b => `<li><button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-node="${esc(b.node)}">${esc(nm(b.node))}</button><br><span class="small">${b.genes.map(h => `${esc(nm(h))} ${evs(b.edges[nm(h)], 1)}`).join(' · ')}</span></li>`).join('')}</ul>` : '<p class="muted small">No researcher bridges this gene to another in the slice.</p>'}
+    </div></div><div class="stack">${leadsCard(d)}<div class="card"><h2>Everyone on this gene</h2>${listItems(people, 12)}</div></div></div>`;
+}
+
+function mariaView(d) {
+  const l = lead ? V.diseases[d].leads.find(x => x.disease === lead) : null;
+  return `<div class="cols"><div class="stack">${diseaseCard(d)}${communityCard(d, 'Your community today', 'What already exists for your gene')}${gapsCard(d)}</div>
+    <div class="stack">${mapCard(d)}${leadsCard(d)}${l ? leadCard(d, l) : '<p class="note">Select a connected disease to see the evidence chain, what could be shared, and a next step.</p>'}${bridgesCard(d)}${counterCard()}</div></div>`;
+}
+
+function showNode(id) {
+  const n = N[id]; if (!n) return;
+  const rel = Object.entries(E).filter(([, e]) => e[0] === id || e[2] === id).slice(0, 40);
+  const a = n.a || {};
+  const d = $('drawer');
+  d.innerHTML = `<button class="btn x" id="close">Close</button><h3>${esc(n.t)}</h3><h2>${esc(cap(n.n))}</h2>
+    <dl class="kv">${Object.entries(a).filter(([k, v]) => v !== '' && v != null && !(Array.isArray(v) && !v.length)).slice(0, 10).map(([k, v]) => `<dt>${esc(k.replace(/_/g, ' '))}</dt><dd>${esc(Array.isArray(v) ? v.join(', ') : v)}</dd>`).join('')}</dl>
+    ${id.startsWith('NCT:') ? `<p><a href="https://clinicaltrials.gov/study/${esc(id.slice(4))}" target="_blank" rel="noopener">Open on ClinicalTrials.gov</a> for contacts and eligibility</p>` : ''}
+    ${id.startsWith('PMID:') ? `<p><a href="https://pubmed.ncbi.nlm.nih.gov/${esc(id.slice(5))}/" target="_blank" rel="noopener">Open on PubMed</a></p>` : ''}
+    <h3>Links</h3><ul class="plain">${rel.map(([i, e]) => `<li class="small">${e[0] === id ? '' : esc(cap(nm(e[0]))) + ' '}<span class="muted">${esc(PRED[e[1]] || e[1])}</span> ${e[2] === id ? '' : esc(nm(e[2]))} ${ev(i, e[3])}</li>`).join('')}</ul>`;
+  d.hidden = false; $('close').focus();
+}
+
+function showSymptom(label, ds) {
+  const d = $('drawer');
+  d.innerHTML = `<button class="btn x" id="close">Close</button><h3>Symptom</h3><h2>${esc(cap(label))}</h2>
+    <p class="small muted">Diseases in this slice with this symptom (HPO annotations). A shared symptom alone is weak evidence: different causes can look alike.</p>
+    <ul class="plain">${ds.map(x => `<li><button class="ev" style="font-family:var(--body);font-size:13px;border:0;margin:0" data-d="${x}">${esc(dn(x))}</button> <span class="small muted">${esc(V.diseases[x].genes.map(nm).join(', '))}</span></li>`).join('')}</ul>`;
+  d.hidden = false; $('close').focus();
+}
+
+function render() {
+  const d = current;
+  $('main').innerHTML = persona === 'devon' ? devonView(d) : persona === 'priya' ? priyaView() : persona === 'osei' ? oseiView(d) : mariaView(d);
+  writeHash();
+  const c = $('copy'); if (c) c.addEventListener('click', () => { navigator.clipboard?.writeText($('prop').textContent); c.textContent = 'Copied'; });
+}
+readHash();
+render();
+</script>
