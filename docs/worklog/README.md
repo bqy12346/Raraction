@@ -18,6 +18,7 @@
 | [04-issues-and-fixes.md](04-issues-and-fixes.md) | 过程中发现的问题和修正，大多是"看起来对、其实错"的情况 |
 | [05-next-steps.md](05-next-steps.md) | 还没做的事、风险，以及运行 OpenAI 步骤的方法 |
 | [06-ui-merge.md](06-ui-merge.md) | 把 journey 页面并入 cluster view、作为唯一界面的思路和改动 |
+| [08-map-graph.md](08-map-graph.md) | 中间的图改成 Obsidian 式的力导向知识图谱：拖动、悬停高亮、点任意节点或连线都能看来源 |
 
 ## 当前状态
 

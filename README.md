@@ -18,7 +18,7 @@ For research use only, not medical advice.
 |---|---|
 | [data/atlas/](data/atlas/) | The database: nodes, edges, crosswalk tables, classification, neighbour pairs, and the build script |
 | [data/demo_graph/](data/demo_graph/) | A small ten-gene graph for trying things out |
-| [views/atlas_cluster_view.html](views/atlas_cluster_view.html) | **The user interface**: searchable cluster view of all 7,999 diseases, with the full journey for the STXBP1 slice; download and open in a browser |
+| [views/atlas_cluster_view.html](views/atlas_cluster_view.html) | **The user interface**: searchable cluster view of all 7,999 diseases, with the full journey for the STXBP1 slice. The map in the middle is a live force-directed graph, in the manner of Obsidian, of the selected disease, its genes, mechanism, shared pathways, neighbours and the groups, studies and people around them; drag a node and its neighbours follow, hover to light up its links, click any node or line for its source. Download and open in a browser |
 | [views/demo_graph.html](views/demo_graph.html) | Interactive view of the ten-gene graph |
 | [scripts/download_raw.sh](scripts/download_raw.sh) | Downloads the raw source files (about 1 GB, not committed) |
 | [data/README.md](data/README.md) | File-by-file reference: columns, keys, thresholds |
@@ -45,7 +45,7 @@ atlas (HPO, MONDO, Orphanet, Reactome, HGNC)
    ├─ extract_claims  OpenAI: mechanism claims and research assets read from abstracts (Extract + Reconcile)
    │  build_slice.py  merge; mechanism per gene-disease link; bridges; leads with verdicts; gaps
    ├─ explain         OpenAI: plain-language explanation, next step and draft message for each lead (Explain)
-   │  build_view.py   embed atlas + slice data and a symptom index into views/atlas_cluster_view.html
+   │  build_view.py   embed atlas + slice data, a symptom index, atlas source links and force-graph into views/atlas_cluster_view.html
 ```
 
 Every source writes `data/slice/parts/<source>_{nodes,edges}.tsv` in the atlas edge format (source, source id, url,

@@ -32,7 +32,7 @@
     --observed: #3fb37f; --extracted: #5b9fec; --inferred: #e0a030; color-scheme: dark;
   }
   body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.45; }
-  .page { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 56px; display: flex; flex-direction: column; gap: 14px; }
+  .page { max-width: 1440px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 56px; display: flex; flex-direction: column; gap: 14px; }
   .titlebar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
   h1 { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 28px); margin: 0; line-height: 1.1; }
   .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
@@ -64,20 +64,27 @@
   .viewing button small { color: var(--muted); }
   .viewing button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
   .viewing button[aria-pressed="true"] small { color: inherit; opacity: .75; }
-  .map { overflow-x: auto; }
-  .map svg { display: block; width: 100%; min-width: 520px; height: auto; font-family: var(--body); }
-  .map .lk { stroke: var(--muted); stroke-width: 1.4; }
-  .map .lk.x { stroke-dasharray: 5 4; }
-  .map .lk.in { stroke: var(--line); stroke-width: 1; }
-  .map .nd { stroke: var(--surface); stroke-width: 2; cursor: pointer; }
-  .map .nd.me { stroke: var(--fg); stroke-width: 2.5; cursor: default; }
-  .map .ring { fill: none; stroke-width: 2.5; pointer-events: none; }
-  .map text { fill: var(--fg); font-size: 12px; }
-  .map text.m { fill: var(--muted); font-size: 11px; }
+  .maptools { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .layers { display: flex; flex-wrap: wrap; gap: 4px; }
+  .layers button { font: inherit; font-size: 12px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+  .layers button[aria-pressed="true"] { color: var(--fg); background: var(--soft); border-color: var(--muted); }
+  .layers button:disabled { opacity: .45; cursor: not-allowed; }
+  .layers button .n { font-variant-numeric: tabular-nums; color: var(--muted); margin-left: 3px; }
+  .mapbtns { display: flex; gap: 4px; position: relative; }
+  .forces summary { list-style: none; }
+  .forces summary::-webkit-details-marker { display: none; }
+  .forces[open] summary { background: var(--soft); }
+  .forces > div { position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; width: 220px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+                  box-shadow: 0 6px 18px rgba(0,0,0,.18); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .forces label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+  .forces input { width: 100%; accent-color: var(--fg); }
+  .map { height: 660px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); position: relative; overflow: hidden; touch-action: none; }
+  @media (max-width: 1040px) { .map { height: 460px; } }
   .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend svg { width: 14px; height: 14px; flex: none; }
   .ln { width: 22px; border-top: 2px solid var(--muted); display: inline-block; }
-  .ln.x { border-top-style: dashed; }
+  .ln.dash { border-top-style: dashed; }
   .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 13px; }
   .kv dt { color: var(--muted); }
   .kv dd { margin: 0; overflow-wrap: anywhere; }
@@ -166,7 +173,17 @@
     </div>
 
     <div class="card">
-      <div class="map"><svg id="map" viewBox="0 0 760 500" role="img" aria-label="Selected disease and its nearest neighbours"></svg></div>
+      <div class="maptools">
+        <div class="layers" id="layers" role="group" aria-label="Show on the map"></div>
+        <div class="mapbtns"><button class="btn" id="fit">Fit</button><button class="btn" id="relayout" title="Start the layout again">Reset</button>
+          <details class="forces" id="forces"><summary class="btn">Forces</summary><div>
+            <label>Centre force <input type="range" data-force="center" min="0" max="0.15" step="0.005"></label>
+            <label>Repel force <input type="range" data-force="repel" min="10" max="200" step="5"></label>
+            <label>Link distance <input type="range" data-force="link" min="0.4" max="2.5" step="0.05"></label>
+          </div></details></div>
+      </div>
+      <div class="map" id="map" role="img" aria-label="The selected disease, its genes, mechanism, shared pathways, nearest neighbours and the groups, studies and people around them. The same neighbours are listed on the right."></div>
+      <p class="hint" id="mapnote">Drag to move · scroll or pinch to zoom · click a node or a line for its details and source · double-click a disease to put it in the centre</p>
       <div class="legend" id="legend"></div>
     </div>
 
@@ -185,10 +202,12 @@
 <div id="tip" hidden></div>
 <aside id="drawer" hidden aria-label="Evidence"></aside>
 
+<script>__FORCEGRAPH__</script>
 <script>
 const A = __ATLAS__;
 const S = __SLICE__;
 const SYM = __SYMPTOMS__;   // [symptom name, [disease indices]] across the whole atlas (HPO)
+const L = __LINKS__;        // gp: gene symbol -> pathway indices · pu: Reactome id per pathway · tu: HPO id per symptom · gd: disease index -> [gene, OMIM|ORPHA, id, association]
 const D = A.d, NB = A.n;   // D[i] = [id, name, mech, pheno, genes, direction, centrality, nSymptoms, nPathways, nNeighbours]
 const SN = S.nodes, SE = S.edges, SX = S.explanations || {};
 const FIXED = ['Metabolism', 'Signal Transduction', 'Metabolism of proteins', 'Immune System', 'Developmental Biology', 'Transport of small molecules', 'Neuronal System', 'Extracellular matrix organization'];
@@ -278,29 +297,343 @@ hits.addEventListener('click', e => {
 
 function select(i) { current = i; lead = null; $('drawer').hidden = true; draw(); panel(); journey(); writeHash(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-// ---------------------------------------------------------------- map
+// ---------------------------------------------------------------- map: a live graph of the selected disease's neighbourhood, in the manner of Obsidian's graph view
+// Nodes float on a force simulation: drag one and its neighbours follow; hover or pick one and only its neighbourhood stays lit.
+// Diseases wear their mechanism-cluster colour and a ring for the lead verdict, genes the ink colour; biology (mechanism, pathway,
+// symptom) is drawn hollow and groups, studies and people as grey dots. Size grows with the number of links; inferred lines are dashed.
+// Every node and line opens its details and source.
 function verdictOf(i, j) { const s = slice(i); const l = s && s.leads.find(x => x.disease === D[j][0]); return l ? l.verdict : null; }
-function draw() {
-  const me = D[current], nb = NB[current], cx = 380, cy = 250, P = [];
-  const comb = nb.map(n => Math.sqrt(n[1] * n[2])), mx = Math.max(...comb, 0.01);
-  const pos = nb.map((n, k) => { const a = -Math.PI / 2 + 2 * Math.PI * k / nb.length, r = 105 + (1 - comb[k] / mx) * 110; return [cx + r * Math.cos(a) * 1.35, cy + r * Math.sin(a)]; });
-  nb.forEach((n, k) => NB[n[0]].forEach(m => { const j = nb.findIndex(x => x[0] === m[0]); if (j > k) P.push(`<line class="lk in" x1="${pos[k][0]}" y1="${pos[k][1]}" x2="${pos[j][0]}" y2="${pos[j][1]}"/>`); }));
-  nb.forEach((n, k) => P.push(`<line class="lk${D[n[0]][2] !== me[2] ? ' x' : ''}" x1="${cx}" y1="${cy}" x2="${pos[k][0]}" y2="${pos[k][1]}"/>`));
-  const verdicts = new Set();
-  nb.forEach((n, k) => { const d = D[n[0]], r = 8 + d[6] / 100 * 9, v = verdictOf(current, n[0]);
-    if (v) { verdicts.add(v); P.push(`<circle class="ring" cx="${pos[k][0]}" cy="${pos[k][1]}" r="${r + 4}" style="stroke:${VCOL[v]}"/>`); }
-    P.push(`<circle class="nd" data-i="${n[0]}" data-t="${esc(cap(d[1]) + ' · ' + A.mech[d[2]] + (v ? ' · ' + v : ''))}" cx="${pos[k][0]}" cy="${pos[k][1]}" r="${r}" style="fill:${col(d[2])}"/>`,
-           `<text x="${pos[k][0] + r + 4}" y="${pos[k][1] - r + 2}">${k + 1}</text>`, `<text class="m" x="${pos[k][0] + r + 4}" y="${pos[k][1] + 12}">${esc(cut(d[4].join(', '), 16))}</text>`); });
-  const r0 = 10 + me[6] / 100 * 10;
-  P.push(`<circle class="nd me" cx="${cx}" cy="${cy}" r="${r0}" style="fill:${col(me[2])}"/>`, `<text x="${cx}" y="${cy + r0 + 16}" text-anchor="middle" style="font-weight:600">${esc(cut(cap(me[1]), 46))}</text>`,
-         `<text class="m" x="${cx}" y="${cy + r0 + 31}" text-anchor="middle">${esc(cut(me[4].join(', '), 40))}</text>`);
-  if (!nb.length) P.push(`<text class="m" x="${cx}" y="${cy - 40}" text-anchor="middle">No neighbour shares both a specific pathway and symptoms.</text>`);
-  $('map').innerHTML = P.join('');
-  const ms = [...new Set([me[2], ...nb.map(n => D[n[0]][2])])];
-  $('legend').innerHTML = ms.map(m => `<span><i class="dot" style="background:${col(m)}"></i>${esc(A.mech[m])}</span>`).join('') +
-    [...verdicts].map(v => `<span><i class="dot" style="background:transparent;border:2.5px solid ${VCOL[v]};box-sizing:border-box"></i>${esc(VERDICT[v][1])}</span>`).join('') +
-    `<span><i class="ln"></i>same cluster</span><span><i class="ln x"></i>bridge across clusters</span><span>Larger circle = more connected · closer = more similar</span>`;
+const tip = $('tip');
+const HG = Object.fromEntries(Object.entries(SN).filter(([, n]) => n.t === 'gene').map(([id, n]) => [n.n, id]));   // symbol -> HGNC id, slice genes only
+const SEI = {};
+for (const [id, e] of Object.entries(SE)) (SEI[e[0] + '|' + e[1] + '|' + e[2]] ||= []).push(id);
+const seFind = (s, p, o) => SEI[s + '|' + p + '|' + o] || null;
+const PIDX = Object.fromEntries(L.pu.map((r, k) => [r, k]));
+const SYMI = new Map(SYM);
+const etOf = ids => { const t = (ids || []).map(x => SE[x] && SE[x][7]); return !t.length || t.includes('observed') ? 'observed' : t.includes('extracted') ? 'extracted' : 'inferred'; };
+const tokv = v => { const m = /^var\((--[\w-]+)\)$/.exec(v); return m ? getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim() : v; };
+const sid = x => typeof x === 'object' ? x.id : x;
+const DIR = { 'loss of function': ['loss_of_function'], 'gain of function': ['gain_of_function'], 'both reported': ['loss_of_function', 'gain_of_function'] };
+const LAYERS = [['genes', 'Genes', 'gene', 1, 0], ['mechanism', 'Mechanism', 'mechanism', 1, 0], ['pathways', 'Shared pathways', 'pathway', 1, 0], ['symptoms', 'Shared symptoms', 'symptom', 0, 0],
+  ['groups', 'Patient groups', 'group', 1, 1], ['studies', 'Studies', 'study', 1, 1], ['connectors', 'Shared people', 'connector', 1, 1],
+  ['researchers', 'Researchers', 'researcher', 0, 1], ['papers', 'Papers', 'paper', 0, 1], ['grants', 'Grants', 'grant', 0, 1]];   // [key, label, node type, on at start, slice only]
+const show = Object.fromEntries(LAYERS.map(([k, , , on]) => [k, !!on]));
+const COMMUNITY = [['groups', 'patient_groups', 'group', 8, 2], ['studies', 'studies', 'study', 8, 1], ['researchers', 'researchers', 'researcher', 12, 3],
+  ['papers', 'papers', 'paper', 10, 2], ['grants', 'grants', 'grant', 6, 1]];   // [layer, community key, node type, most per selected disease's gene, most per neighbour's gene]
+const TYPE_LABEL = { disease: 'disease', gene: 'gene', mechanism: 'mechanism', pathway: 'shared pathway', symptom: 'shared symptom', group: 'patient group or registry',
+  study: 'study', connector: 'tied to two genes', researcher: 'researcher', paper: 'paper', grant: 'NIH grant' };
+const REL = { sim: 'resembles', nn: 'resembles', cause: 'causes', path: 'acts in', mech: 'works through', sym: 'has symptom', bridge: 'is tied to',
+  patient_groups: 'serves families with', studies: 'studies', researchers: 'works on', papers: 'is about', grants: 'funds research on' };
+const HOLLOW = new Set(['mechanism', 'pathway', 'symptom']);
+const SIZE = { disease: 5, gene: 4.5, mechanism: 4.5, pathway: 3.5, symptom: 2.5, group: 3.5, connector: 3.5, study: 3, researcher: 2.5, paper: 2.5, grant: 2.5 };   // radius before links add to it
+const FADE = { disease: 0.7, gene: 0.7, mechanism: 0.7, pathway: 1.3, group: 1.3, connector: 1.3, symptom: 1.5, study: 1.6, researcher: 1.7, paper: 1.8, grant: 1.7 };   // zoom, relative to the fitted view, where a label starts to show
+const LINK_LEN = { sim: 80, nn: 100, cause: 34, path: 50, mech: 64, sym: 54, bridge: 60 };   // others (groups, studies, people) 34
+const FORCES = { center: 0.04, repel: 75, link: 1 };   // the Forces panel; link scales every link length
+try { Object.assign(FORCES, JSON.parse(localStorage.getItem('atlas.forces') || '{}')); } catch {}
+let fg = null, data = { nodes: [], links: [] }, adj = new Map(), byId = new Map(), linkById = new Map(), C = {};
+let hoverNode = null, hoverLink = null, picked = null, leadSet = null, touched = false, lastClick = { id: null, t: 0 }, fitK = 1;
+const fit = ms => {   // labels fade in relative to this fitted zoom, so they behave the same for a small graph and a large one
+  const b = fg.getGraphBbox();
+  if (b) fitK = Math.min((fg.width() - 72) / Math.max(b.x[1] - b.x[0], 1), (fg.height() - 72) / Math.max(b.y[1] - b.y[0], 1));
+  fg.zoomToFit(ms, 36);
+};
+
+function graphFor(i, on) {
+  const N = new Map(), E = new Map(), me = D[i], nb = NB[i], s = slice(i), ds = [i, ...nb.map(n => n[0])];
+  const node = (id, type, label, extra = {}) => { if (!N.has(id)) N.set(id, { id, type, label, full: label, ...extra }); };
+  const edge = (a, b, kind, extra = {}) => { const id = kind + '|' + a + '|' + b; if (a !== b && N.has(a) && N.has(b) && !E.has(id)) E.set(id, { id, source: a, target: b, kind, et: 'observed', ...extra }); };
+  const dnode = (j, extra) => node('D:' + j, 'disease', cut(cap(D[j][1]), 40), { i: j, full: cap(D[j][1]), m: D[j][2], ...extra });
+
+  dnode(i, { center: 1, fx: 0, fy: 0 });
+  nb.forEach((n, k) => { const v = verdictOf(i, n[0]); dnode(n[0], { rank: k + 1, ...(v ? { verdict: v } : {}) }); });
+  nb.forEach(n => { const l = s && s.leads.find(x => x.disease === D[n[0]][0]);
+    edge('D:' + i, 'D:' + n[0], 'sim', { et: 'inferred', w: Math.sqrt(n[1] * n[2]), eids: l && SE[l.edge] ? [l.edge] : null, info: { kind: 'sim', a: i, b: n[0], n } }); });
+  nb.forEach((n, k) => NB[n[0]].forEach(m => { const j = nb.findIndex(x => x[0] === m[0]); if (j > k) edge('D:' + n[0], 'D:' + m[0], 'nn', { et: 'inferred', info: { kind: 'sim', a: n[0], b: m[0], n: m } }); }));
+
+  const gid = g => 'G:' + g, anchor = g => on.genes ? gid(g) : 'D:' + ds.find(j => D[j][4].includes(g));
+  if (on.genes) ds.forEach(j => D[j][4].forEach(g => {
+    node(gid(g), 'gene', g, { sym: g });
+    edge(gid(g), 'D:' + j, 'cause', { eids: HG[g] && seFind(HG[g], 'gene_associated_with_condition', D[j][0]), info: { kind: 'cause', g, j } });
+  }));
+  if (on.mechanism) ds.forEach(j => {
+    const sd = S.diseases[D[j][0]], ids = sd && sd.mechanism.evidence.length ? sd.mechanism.evidence : null;
+    for (const key of sd ? (sd.mechanism.label ? [sd.mechanism.label] : []) : DIR[D[j][5]] || []) {
+      node('M:' + key, 'mechanism', MECH[key] || key.replace(/_/g, ' '), { key });
+      edge('D:' + j, 'M:' + key, 'mech', { et: ids ? etOf(ids) : 'observed', eids: ids, level: sd ? sd.mechanism.level : '', info: { kind: 'mech', j, key } });
+    }
+  });
+  if (on.pathways) nb.forEach(n => n[4].forEach(p => {
+    node('P:' + p, 'pathway', cut(A.paths[p], 30), { p, full: A.paths[p] });
+    for (const j of [i, n[0]]) {
+      const gs = D[j][4].filter(g => (L.gp[g] || []).includes(p));
+      if (on.genes && gs.length) gs.forEach(g => edge(gid(g), 'P:' + p, 'path', { eids: HG[g] && L.pu[p] ? seFind(HG[g], 'participates_in', 'REACT:' + L.pu[p]) : null, info: { kind: 'path', g, p } }));
+      else edge('D:' + j, 'P:' + p, 'path', { info: { kind: 'path', j, gs, p } });
+    }
+  }));
+  if (on.symptoms) nb.forEach(n => n[5].forEach(t => {
+    node('S:' + t, 'symptom', cut(A.terms[t], 30), { t, full: A.terms[t] });
+    for (const j of [i, n[0]]) edge('D:' + j, 'S:' + t, 'sym', { info: { kind: 'sym', j, t } });
+  }));
+
+  // the slice adds the people, groups and studies around each gene it covers
+  const sliceGenes = [...new Set(ds.flatMap(j => D[j][4]))].filter(g => HG[g] && S.genes[HG[g]]);
+  if (on.connectors) for (const x of S.bridges) {
+    const gs = x.genes.map(nm).filter(g => sliceGenes.includes(g));
+    if (x.type === 'funder' || gs.length < 2 || !gs.some(g => me[4].includes(g)) || !SN[x.node]) continue;   // ties to the selected disease's gene; funders back almost everything
+    node(x.node, 'connector', cut(cap(nm(x.node)), 28), { full: cap(nm(x.node)), slicenode: 1 });
+    gs.forEach(g => edge(x.node, anchor(g), 'bridge', { et: etOf(x.edges[g]), eids: x.edges[g] || [] }));
+  }
+  for (const [layer, key, type, most, mostNb] of COMMUNITY) if (on[layer]) for (const g of sliceGenes) {
+    const a = anchor(g), items = Object.entries(S.genes[HG[g]].community[key] || {}).filter(([n]) => SN[n]).sort((x, y) => y[1].length - x[1].length).slice(0, me[4].includes(g) ? most : mostNb);
+    for (const [n, eids] of items) { node(n, type, cut(cap(nm(n)), 28), { full: cap(nm(n)), slicenode: 1 }); edge(n, a, key, { et: etOf(eids), eids }); }
+  }
+  return { nodes: [...N.values()], links: [...E.values()] };
 }
+
+function palette() {
+  const t = n => tokv(`var(--${n})`);
+  C = { fg: t('fg'), bg: t('bg'), muted: t('muted'), inferred: t('inferred'), extracted: t('extracted'), font: getComputedStyle(document.body).fontFamily,
+        mech: A.mech.map((_, m) => tokv(col(m))), verdict: Object.fromEntries(Object.entries(VCOL).map(([v, c]) => [v, tokv(c)])) };
+}
+const gravity = () => { let nodes = []; const f = alpha => { for (const n of nodes) { n.vx -= n.x * FORCES.center * alpha; n.vy -= n.y * FORCES.center * alpha; } }; f.initialize = ns => nodes = ns; return f; };
+const collide = () => { let nodes = []; const f = () => {
+  for (let a = 0; a < nodes.length; a++) for (let b = a + 1; b < nodes.length; b++) {
+    const p = nodes[a], q = nodes[b], dx = q.x - p.x || 0.01, dy = q.y - p.y, d = Math.hypot(dx, dy), min = p.r + q.r + 3;
+    if (d < min) { const m = (min - d) / d / 2; p.x -= dx * m; p.y -= dy * m; q.x += dx * m; q.y += dy * m; }
+  } }; f.initialize = ns => nodes = ns; return f; };
+function applyForces() {
+  const deg = x => (adj.get(sid(x))?.links.size) || 1;
+  fg.d3Force('link').distance(l => (LINK_LEN[l.kind] || 34) * FORCES.link).strength(l => l.kind === 'nn' ? 0.04 : 1 / Math.min(deg(l.source), deg(l.target)));
+  fg.d3Force('charge').strength(n => -FORCES.repel * (n.type === 'disease' || n.type === 'gene' ? 1.6 : 1)).distanceMax(500);
+  fg.d3Force('center', null);   // replaced by a pull towards the middle, like Obsidian's centre force
+  fg.d3Force('gravity', gravity());
+  fg.d3Force('collide', collide());
+}
+
+const wrap = (text, n) => {   // at most two lines
+  const out = [''];
+  for (const w of text.split(' ')) { const cur = out[out.length - 1]; if (!cur || (cur + ' ' + w).length <= n) out[out.length - 1] = cur ? cur + ' ' + w : w; else out.push(w); }
+  return out.length > 2 ? [out[0], cut(out.slice(1).join(' '), n)] : out;
+};
+function paintNode(n, ctx, k) {
+  if (!Number.isFinite(n.x)) return;
+  const a = n.__a ?? 1, r = n.r;
+  ctx.globalAlpha = a;
+  ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 2 * Math.PI);
+  if (HOLLOW.has(n.type)) { ctx.fillStyle = C.bg; ctx.fill(); ctx.lineWidth = Math.max(1, r * 0.35); ctx.strokeStyle = n.type === 'mechanism' ? C.fg : C.muted; ctx.stroke(); }
+  else { ctx.fillStyle = n.type === 'disease' ? C.mech[n.m] : n.type === 'gene' ? C.fg : C.muted; ctx.fill(); }
+  if (n.center || n.verdict || n.type === 'connector') {
+    ctx.beginPath(); ctx.arc(n.x, n.y, r + (n.center ? 2.6 : 1.9), 0, 2 * Math.PI);
+    ctx.lineWidth = n.center ? 1.6 : 1.2; ctx.strokeStyle = n.center ? C.fg : n.verdict ? C.verdict[n.verdict] : C.muted; ctx.stroke();
+  }
+  const la = n.center || n.__lit ? 1 : Math.max(0, Math.min(1, (k / fitK - FADE[n.type]) / 0.3));
+  if (la * a > 0.03) {
+    const fs = (n.center ? 12.5 : 11) / k, strong = n.center || n.__lit;
+    ctx.font = `${strong ? 600 : 400} ${fs}px ${C.font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
+    ctx.globalAlpha = la * a; ctx.lineWidth = 3 / k; ctx.strokeStyle = C.bg; ctx.fillStyle = strong ? C.fg : C.muted;
+    (n.lines ||= wrap(n.label, 24)).forEach((t, q) => { const y = n.y + r + (n.center ? 4.5 : 3) / k + q * fs * 1.2; ctx.strokeText(t, n.x, y); ctx.fillText(t, n.x, y); });
+  }
+  ctx.globalAlpha = 1;
+}
+function paintLink(l, ctx, k) {
+  const s = l.source, t = l.target;
+  if (!Number.isFinite(s.x) || !Number.isFinite(t.x)) return;
+  ctx.globalAlpha = (l.__a ?? 1) * (l.__lit ? 0.95 : l.kind === 'nn' ? 0.2 : l.et === 'observed' ? 0.4 : 0.65);
+  ctx.strokeStyle = l.__lit ? C.fg : l.et === 'inferred' ? C.inferred : l.et === 'extracted' ? C.extracted : C.muted;
+  ctx.lineWidth = (l.__lit ? 1.6 : l.kind === 'sim' ? 0.8 + 2.4 * (l.w || 0) : 0.8) / k;
+  ctx.setLineDash(l.et === 'inferred' ? [4 / k, 3 / k] : []);
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+}
+
+// what stays lit: the hovered node or line, else the picked one, else the open lead's chain; everything else fades
+function focusSet() {
+  const around = id => adj.get(id), ofLink = l => ({ nodes: new Set([sid(l.source), sid(l.target)]), links: new Set([l.id]) });
+  if (hoverNode && adj.has(hoverNode.id)) return around(hoverNode.id);
+  if (hoverLink) return ofLink(hoverLink);
+  if (picked && adj.has(picked)) return around(picked);
+  if (picked && linkById.has(picked)) return ofLink(linkById.get(picked));
+  return leadSet;
+}
+function easeFocus() {
+  const f = focusSet(), ease = (x, to) => (x ?? 1) + (to - (x ?? 1)) * 0.2;
+  for (const n of data.nodes) { const on = !f || f.nodes.has(n.id); n.__lit = !!f && on; n.__a = ease(n.__a, on ? 1 : 0.12); }
+  for (const l of data.links) { const on = !f || f.links.has(l.id); l.__lit = !!f && on; l.__a = ease(l.__a, on ? 1 : 0.07); }
+}
+
+function makeGraph() {
+  const el = $('map');
+  fg = new ForceGraph(el)
+    .width(el.clientWidth).height(el.clientHeight).backgroundColor('rgba(0,0,0,0)')
+    .nodeLabel(() => '').linkLabel(() => '')
+    .autoPauseRedraw(false).minZoom(0.2).maxZoom(8).warmupTicks(60).cooldownTime(4000).d3VelocityDecay(0.3)
+    .nodeCanvasObject(paintNode)
+    .nodePointerAreaPaint((n, color, ctx) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 2, 0, 2 * Math.PI); ctx.fill(); })
+    .linkCanvasObjectMode(() => 'replace').linkCanvasObject(paintLink).linkHoverPrecision(5)
+    .onRenderFramePre(easeFocus)
+    .onNodeHover(n => { hoverNode = n; })
+    .onLinkHover(l => { hoverLink = l; tip.hidden = !l; if (l) tip.textContent = `${edgeTitle(l)} · ${l.et}`; })
+    .onNodeClick(n => {
+      const now = Date.now(), twice = lastClick.id === n.id && now - lastClick.t < 400;
+      lastClick = twice ? { id: null, t: 0 } : { id: n.id, t: now };
+      if (twice && n.type === 'disease' && !n.center) return select(n.i);
+      picked = n.id; nodeInfo(n);
+    })
+    .onLinkClick(l => { picked = l.id; edgeInfo(l); })
+    .onBackgroundClick(() => { picked = null; })
+    .onZoom(() => { tip.hidden = true; })
+    .onEngineStop(() => { if (!touched) fit(400); touched = true; });
+  applyForces();
+  el.addEventListener('mousemove', e => { tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+  el.addEventListener('mouseleave', () => { tip.hidden = true; hoverNode = hoverLink = null; });
+  for (const ev of ['wheel', 'pointerdown']) el.addEventListener(ev, () => { touched = true; }, { passive: true });
+  new ResizeObserver(() => fg.width(el.clientWidth).height(el.clientHeight)).observe(el);
+}
+
+function draw() {
+  const me = D[current], s = slice(current), nb = NB[current];
+  const all = graphFor(current, Object.fromEntries(LAYERS.map(([k]) => [k, true])));
+  $('layers').innerHTML = LAYERS.map(([k, label, type, , sliceOnly]) => {
+    const n = all.nodes.filter(x => x.type === type).length, off = (sliceOnly && !s) || !n;
+    return `<button data-layer="${k}" aria-pressed="${show[k] && !off}" ${off ? 'disabled' : ''} title="${sliceOnly && !s ? 'Gathered for the STXBP1 slice only' : ''}">${label}<span class="n">${n}</span></button>`;
+  }).join('');
+  data = graphFor(current, show);
+  byId = new Map(data.nodes.map(n => [n.id, n])); linkById = new Map(data.links.map(l => [l.id, l]));
+  adj = new Map(data.nodes.map(n => [n.id, { nodes: new Set([n.id]), links: new Set() }]));
+  for (const l of data.links) for (const [a, b] of [[l.source, l.target], [l.target, l.source]]) { adj.get(a).nodes.add(b); adj.get(a).links.add(l.id); }
+  for (const n of data.nodes) n.r = (n.center ? 8 : SIZE[n.type]) + Math.sqrt(adj.get(n.id).links.size) * 0.9;
+  hoverNode = hoverLink = picked = null; touched = false;
+  palette();
+  if (!fg) makeGraph();
+  fg.graphData(data);
+  setTimeout(() => { if (!touched) fit(0); }, 60);
+  markLead();
+  $('mapnote').textContent = (nb.length ? '' : 'No disease shares both a specific pathway and overlapping symptoms with this one, so the map shows only its own genes and mechanism. ') +
+    'Drag a node and its neighbours follow · scroll to zoom · hover to light up its links · click a node or a line for details and source · double-click a disease to put it in the centre';
+  drawLegend([...new Set([me[2], ...nb.map(n => D[n[0]][2])])]);
+}
+
+const DOT = (fill, stroke, w = 0) => `<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="${w ? 4.6 : 5}" fill="${fill}" stroke="${stroke}" stroke-width="${w}"/></svg>`;
+function drawLegend(ms) {
+  const types = new Set(data.nodes.map(n => n.type)), ets = new Set(data.links.map(l => l.et)), vs = new Set(data.nodes.map(n => n.verdict).filter(Boolean));
+  const grey = ['group', 'study', 'researcher', 'paper', 'grant'].filter(t => types.has(t)).map(t => ({ group: 'patient groups', study: 'studies', researcher: 'researchers', paper: 'papers', grant: 'grants' }[t]));
+  $('legend').innerHTML = ms.map(m => `<span><i class="dot" style="background:${col(m)}"></i>${esc(A.mech[m])}</span>`).join('') +
+    [...vs].map(v => `<span><i class="dot" style="background:transparent;border:2px solid ${VCOL[v]};box-sizing:border-box"></i>${esc(VERDICT[v][1])}</span>`).join('') +
+    (types.has('gene') ? `<span>${DOT('var(--fg)', 'none')}gene</span>` : '') +
+    (types.has('mechanism') ? `<span>${DOT('var(--bg)', 'var(--fg)', 2)}mechanism</span>` : '') +
+    ['pathway', 'symptom'].filter(t => types.has(t)).map(t => `<span>${DOT('var(--bg)', 'var(--muted)', 2)}${TYPE_LABEL[t]}</span>`).join('') +
+    (grey.length ? `<span>${DOT('var(--muted)', 'none')}${grey.join(', ')}</span>` : '') +
+    (types.has('connector') ? `<span>${DOT('var(--muted)', 'var(--muted)', 1.2)}tied to two genes</span>` : '') +
+    ['observed', 'extracted', 'inferred'].filter(et => ets.has(et)).map(et => `<span><i class="ln${et === 'inferred' ? ' dash' : ''}" style="border-color:var(--${et === 'observed' ? 'muted' : et})"></i>${et}</span>`).join('') +
+    '<span>Bigger = more links</span>';
+}
+
+const edgeTitle = l => `${byId.get(sid(l.source))?.full} ${REL[l.kind] || 'is linked to'} ${byId.get(sid(l.target))?.full}`;
+
+// the chain of the open lead: disease ← gene → shared pathway ← gene → neighbour
+function markLead() {
+  leadSet = null;
+  const s = slice(current), l = lead && s && s.leads.find(x => x.disease === lead);
+  if (!l) return;
+  const genes = (l.via_genes.length ? l.via_genes : [s.genes[0], S.diseases[l.disease].genes[0]]).map(h => 'G:' + nm(h));
+  const nodes = new Set(['D:' + current, 'D:' + IDX[l.disease], ...genes, ...l.shared_pathways.map(r => 'P:' + PIDX[r.replace('REACT:', '')])].filter(id => adj.has(id)));
+  leadSet = { nodes, links: new Set(data.links.filter(x => nodes.has(sid(x.source)) && nodes.has(sid(x.target))).map(x => x.id)) };
+}
+
+function openDrawer(html) { $('drawer').innerHTML = `<button class="btn x" id="close">Close</button>${html}`; $('drawer').hidden = false; $('close').focus(); }
+const diseaseList = ds => `<ul class="plain">${ds.slice(0, 30).map(i => `<li><button class="lnk" data-i="${i}">${esc(cap(D[i][1]))}</button> <span class="small muted">${esc(D[i][4].join(', '))} · ${esc(A.mech[D[i][2]])}${slice(i) ? ' · full journey' : ''}</span></li>`).join('')}</ul>${ds.length > 30 ? `<p class="small muted">and ${ds.length - 30} more</p>` : ''}`;
+function nodeInfo(d) {
+  if (d.type === 'disease') return diseaseInfo(d.i);
+  if (d.type === 'gene') return HG[d.sym] ? showNode(HG[d.sym]) : geneInfo(d.sym);
+  if (d.type === 'pathway') return pathwayInfo(d.p);
+  if (d.type === 'mechanism') return mechInfo(d.key);
+  if (d.type === 'symptom') return showSymptom(d.full, SYMI.get(d.full) || []);
+  if (d.slicenode) showNode(d.id);
+}
+function diseaseInfo(j) {
+  const d = D[j], sd = S.diseases[d[0]], n = NB[current].find(x => x[0] === j), v = verdictOf(current, j);
+  const mech = sd ? `${mechBadge(sd.mechanism)} ${evs(sd.mechanism.evidence, 2)}` : d[5] ? esc(d[5]) + ' (Orphanet)' : '<span class="pending">not stated in any database</span>';
+  openDrawer(`<h3>Disease${j === current ? ' · selected' : ''}</h3><h2>${esc(cap(d[1]))}</h2>${v ? `<p><span class="badge ${VERDICT[v][0]}">${VERDICT[v][1]}</span></p>` : ''}
+    <dl class="kv"><dt>Causal gene</dt><dd>${esc(d[4].join(', '))}</dd><dt>Mechanism cluster</dt><dd><i class="dot" style="background:${col(d[2])}"></i> ${esc(A.mech[d[2]])}</dd>
+      <dt>Mechanism</dt><dd>${mech}</dd><dt>Data</dt><dd>${d[7]} symptoms · ${d[8]} pathways · ${d[9]} neighbours</dd><dt>Identifier</dt><dd>${esc(d[0])}</dd>
+      ${n ? `<dt>Similarity</dt><dd>mechanism ${n[1].toFixed(2)} · phenotype ${n[2].toFixed(2)}</dd><dt>Shared pathways</dt><dd>${esc(n[4].map(p => A.paths[p]).join('; ')) || 'none listed'}</dd>
+      <dt>Shared symptoms</dt><dd>${esc(n[5].map(t => A.terms[t]).join('; ')) || 'none listed'}</dd>` : ''}</dl>
+    ${j === current ? '<p class="small muted">This is the selected disease: its summary is on the right and its journey below the map.</p>'
+      : `<p style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn primary" data-i="${j}">Put it in the centre</button>${v ? `<button class="btn" data-lead="${esc(d[0])}">Why are they connected?</button>` : ''}</p>`}
+    ${sd ? '' : '<p class="small muted">Outside the STXBP1 slice: patient groups, studies and people have not been gathered for it yet.</p>'}`);
+}
+function geneInfo(sym) {
+  const ds = D.map((d, i) => i).filter(i => D[i][4].includes(sym)).sort((a, b) => D[b][6] - D[a][6]);
+  openDrawer(`<h3>Gene</h3><h2>${esc(sym)}</h2><p class="small muted">Outside the STXBP1 slice: variants, papers and people have not been gathered for this gene yet.</p>
+    <p><a href="https://www.genenames.org/tools/search/#!/?query=${encodeURIComponent(sym)}" target="_blank" rel="noopener">Look it up on HGNC</a></p>
+    <h3>Diseases it causes in the atlas</h3>${diseaseList(ds)}`);
+}
+function pathwayInfo(p) {
+  const ds = D.map((d, i) => i).filter(i => D[i][4].some(g => (L.gp[g] || []).includes(p))).sort((a, b) => D[b][6] - D[a][6]);
+  const here = [...(adj.get('P:' + p)?.nodes || [])].map(id => byId.get(id)).filter(n => n.type === 'gene').map(n => n.sym);
+  openDrawer(`<h3>Shared pathway · Reactome</h3><h2>${esc(A.paths[p])}</h2>
+    ${L.pu[p] ? `<p><a href="https://reactome.org/PathwayBrowser/#/${esc(L.pu[p])}" target="_blank" rel="noopener">Open in Reactome</a></p>` : ''}
+    <p class="small muted">Two diseases become neighbours when their genes share a specific pathway like this one and their symptoms overlap. A shared pathway is a reason to look closer, not proof of a shared mechanism.</p>
+    ${here.length ? `<dl class="kv"><dt>Genes on the map</dt><dd>${esc(here.join(', '))}</dd></dl>` : ''}
+    <h3>${ds.length} diseases in the atlas whose gene acts in it</h3>${diseaseList(ds)}`);
+}
+function mechInfo(key) {
+  const es = [...(adj.get('M:' + key)?.links || [])].map(id => linkById.get(id));
+  openDrawer(`<h3>Mechanism</h3><h2>${esc(cap(MECH[key] || key))}</h2>${MECH_PLAIN[key] ? `<p>${esc(cap(MECH_PLAIN[key]))}.</p>` : ''}
+    <p class="small muted">Diseases that work through the same mechanism may respond to the same kind of treatment; opposite mechanisms call for different strategies.</p>
+    <h3>Diseases on the map</h3><ul class="plain">${es.map(d => { const j = byId.get(sid(d.source)).i;
+      return `<li><button class="lnk" data-i="${j}">${esc(cap(D[j][1]))}</button> <span class="small">${d.level ? `<span class="badge l-${esc(d.level)}">${esc(d.level)}</span>` : '<span class="muted">Orphanet</span>'} ${d.eids ? evs(d.eids, 2) : ''}</span></li>`; }).join('')}</ul>`);
+}
+
+function edgeInfo(d) {
+  const ids = [...new Set(d.eids || [])].filter(x => SE[x]);
+  if (ids.length === 1) return openEdge(ids[0]);
+  if (ids.length) return openDrawer(`<h3>Evidence</h3><h2>${esc(edgeTitle(d))}</h2><p class="small muted">${ids.length} records support this line. Open one for its source and quote.</p>
+    <ul class="plain">${ids.slice(0, 40).map(x => `<li class="small">${esc(cap(nm(SE[x][0])))} <span class="muted">${esc(PRED[SE[x][1]] || SE[x][1])}</span> ${esc(nm(SE[x][2]))} ${ev(x, SE[x][3])}</li>`).join('')}</ul>`);
+  if (d.info) atlasEdge(d.info);
+}
+const etBadge = et => `<p><span class="badge e-${et}">${et}</span> <span class="small muted">${et === 'inferred' ? 'a proposal computed from the graph; check before acting' : 'stated by the source'}</span></p>`;
+const link = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+function atlasEdge(x) {
+  const dname = j => esc(cap(D[j][1])), head = (a, rel, b, et) => `<h3>Evidence · atlas</h3><h2>${a} <span class="muted">${rel}</span> ${b}</h2>${etBadge(et)}`;
+  const retrieved = `<dt>Retrieved</dt><dd>${esc(L.date)}</dd>`;
+  const source = r => r[1] === 'ORPHA' ? link('https://www.orpha.net/en/disease/detail/' + r[2], 'Orphanet ORPHA:' + r[2]) : link('https://omim.org/entry/' + r[2], 'OMIM via HPO ' + r[1] + ':' + r[2]);
+  if (x.kind === 'cause') {
+    const rs = L.gd[x.j].filter(r => r[0] === x.g);
+    return openDrawer(`${head(esc(x.g), 'causes', dname(x.j), 'observed')}<p class="small">Only causal links are kept: OMIM Mendelian entries, or Orphanet links marked "disease-causing germline mutation".</p>
+      <dl class="kv">${rs.map(r => `<dt>Source</dt><dd>${source(r)}${r[3] && r[3] !== 'UNKNOWN' ? ` <span class="small muted">· ${esc(r[3].toLowerCase())}</span>` : ''}</dd>`).join('')}${retrieved}</dl>`);
+  }
+  if (x.kind === 'path') {
+    const who = x.g ? esc(x.g) : `A gene of ${dname(x.j)}${x.gs && x.gs.length ? ' (' + esc(x.gs.join(', ')) + ')' : ''}`;
+    return openDrawer(`${head(who, 'acts in', esc(A.paths[x.p]), 'observed')}<dl class="kv"><dt>Source</dt><dd>${L.pu[x.p] ? link('https://reactome.org/PathwayBrowser/#/' + L.pu[x.p], 'Reactome ' + L.pu[x.p]) : 'Reactome'}</dd>${retrieved}</dl>`);
+  }
+  if (x.kind === 'sim') {
+    const n = x.n;
+    return openDrawer(`${head(dname(x.a), 'resembles', dname(x.b), 'inferred')}
+      <p class="small">Proposed because the two diseases' genes share a specific Reactome pathway (one with at most 60 diseases) and their symptom profiles overlap. Mechanism and phenotype similarity are scored separately, from 0 to 1.</p>
+      <dl class="kv"><dt>Scores</dt><dd>mechanism ${n[1].toFixed(2)} · phenotype ${n[2].toFixed(2)}</dd>${n[3] ? '<dt>Same gene</dt><dd>yes</dd>' : ''}
+        <dt>Shared pathways</dt><dd>${esc(n[4].map(p => A.paths[p]).join('; ')) || 'none listed'}</dd><dt>Shared symptoms</dt><dd>${esc(n[5].map(t => A.terms[t]).join('; ')) || 'none listed'}</dd>
+        <dt>Computed by</dt><dd>data/atlas/build_atlas.py from Reactome and HPO</dd></dl>`);
+  }
+  if (x.kind === 'mech') {
+    const rs = L.gd[x.j].filter(r => r[1] === 'ORPHA');
+    return openDrawer(`${head(dname(x.j), 'works through', esc(MECH[x.key] || x.key), 'observed')}<p class="small">Orphanet states the variant effect (loss or gain of function) on this gene–disease link.</p>
+      <dl class="kv">${rs.map(r => `<dt>Source</dt><dd>${source(r)}</dd>`).join('')}${retrieved}</dl>`);
+  }
+  if (x.kind === 'sym') return openDrawer(`${head(dname(x.j), 'has symptom', esc(A.terms[x.t]), 'observed')}<p class="small">From HPO disease annotations, counting more specific symptoms under this term.</p>
+      <dl class="kv"><dt>Source</dt><dd>${L.tu[x.t] ? link('https://hpo.jax.org/browse/term/' + L.tu[x.t], 'HPO ' + L.tu[x.t]) : 'HPO annotations'}</dd>${retrieved}</dl>`);
+}
+
+$('layers').addEventListener('click', e => { const b = e.target.closest('button[data-layer]'); if (b && !b.disabled) { show[b.dataset.layer] = !show[b.dataset.layer]; draw(); } });
+$('fit').addEventListener('click', () => fg && fit(400));
+$('relayout').addEventListener('click', draw);
+for (const r of document.querySelectorAll('#forces input')) {
+  r.value = FORCES[r.dataset.force];
+  r.addEventListener('input', () => { FORCES[r.dataset.force] = +r.value; applyForces(); fg.d3ReheatSimulation(); try { localStorage.setItem('atlas.forces', JSON.stringify(FORCES)); } catch {} });
+}
+$('panel').addEventListener('mouseover', e => { const b = e.target.closest('.nb button[data-i]'); hoverNode = b ? byId.get('D:' + b.dataset.i) || null : null; });   // a neighbour in the list lights up on the map
+$('panel').addEventListener('mouseleave', () => { hoverNode = null; });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', palette);
 
 // ---------------------------------------------------------------- selected disease (summary)
 const mechBadge = m => m.label ? `<span class="badge l-${m.level}">${esc(m.level)}</span> ${esc(MECH[m.label] || m.label)}` : '<span class="badge l-unknown">unknown</span>';
@@ -342,10 +675,6 @@ function panel() {
   const x = $('explore'); if (x) x.addEventListener('click', () => $('journey').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 $('panel').addEventListener('click', e => { const b = e.target.closest('.nb button'); if (b) select(+b.dataset.i); });
-$('map').addEventListener('click', e => { const c = e.target.closest('.nd[data-i]'); if (c) select(+c.dataset.i); });
-const tip = $('tip');
-$('map').addEventListener('mousemove', e => { const c = e.target.closest('.nd[data-t]'); if (!c) { tip.hidden = true; return; } tip.textContent = c.dataset.t; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
-$('map').addEventListener('mouseleave', () => tip.hidden = true);
 
 // ---------------------------------------------------------------- evidence
 function ev(id, label) {
@@ -397,7 +726,12 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-ev]'); if (b) { openEdge(b.dataset.ev); return; }
   if (e.target.id === 'close') { $('drawer').hidden = true; return; }
   const di = e.target.closest('#drawer [data-i], #journey [data-i]'); if (di) { select(+di.dataset.i); return; }
-  const l = e.target.closest('[data-lead]'); if (l) { lead = l.dataset.lead; journey(); writeHash(); $('leadcard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const l = e.target.closest('[data-lead]');
+  if (l) {   // the lead card belongs to Maria's view, so a lead opened from the map or another view switches to it
+    lead = l.dataset.lead; persona = 'maria'; $('drawer').hidden = true;
+    $('viewing').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.p === persona));
+    journey(); markLead(); writeHash(); $('leadcard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
   const n = e.target.closest('[data-node]'); if (n) { showNode(n.dataset.node); return; }
   const m = e.target.closest('[data-mech]'); if (m) { priya.m = m.dataset.mech; journey(); return; }
   if (!e.target.closest('.searchbox')) hits.hidden = true;
