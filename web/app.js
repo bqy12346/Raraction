@@ -20,7 +20,7 @@ async function api(url, body) {
   return data;
 }
 function showError(error) { $('#progress').textContent = error.message; $('#progress').classList.add('error'); }
-function options() { return {focus:state.graph?.focus || 'MONDO:0012812', ...(state.graph?.graph_id?{graph_id:state.graph.graph_id}:{}), min_confidence:$('#confidence').value, include_inferred:$('#hypotheses').checked}; }
+function options() { return {focus:state.graph?.focus || 'MONDO:0012812', ...(state.graph?.graph_id?{graph_id:state.graph.graph_id,live_query:state.graph.live?.query||'',live_focus:state.graph.focus}:{}), min_confidence:$('#confidence').value, include_inferred:$('#hypotheses').checked}; }
 async function loadGraph(focus) {
   const serial = ++state.request;
   const params = new URLSearchParams({...options(), focus});
@@ -349,6 +349,8 @@ function renderActions() {
     (r.agent_review?[]:r.actions).map((a,i)=>`<article class="action-card"><div class="when">${i+1}. ${esc(a.when.toUpperCase())}</div><h3>${esc(a.title)}</h3><p>${esc(a.step)}</p><p class="caveat">${esc(a.check)}</p><p>${a.path.map(id=>citation(id)).join('<br>')}</p></article>`).join('')+
     (r.agent_review?`<div class="detail-block"><span class="label">What the papers say &amp; risks to consider</span><p>${esc(r.agent_review.summary)}</p>${r.agent_review.findings.map(f=>`<article class="source-card">${badge(f.status)}<p>${esc(f.statement)}</p><p>${esc(f.limitations)}</p><p>${f.citation_ids.map(citation).join('<br>')}</p></article>`).join('')}<h3>Feasibility &amp; next steps</h3>${r.agent_review.actions.map(f=>`<article class="source-card">${badge(f.status)}<p>${esc(f.statement)}</p><p>${esc(f.limitations)}</p><p>${f.citation_ids.map(citation).join('<br>')}</p></article>`).join('')}<p class="small">${esc(r.agent_review.missing_evidence.join(' · '))}</p></div>`:'')+
     `<a class="secondary wide export" href="/api/reports/${esc(r.id)}/proposal" download="research-proposal.md">Download sourced proposal ↓</a><div class="detail-block"><span class="label">What still needs validation</span>${r.coverage.gaps.map(g=>`<p class="small">• ${esc(g)}</p>`).join('')}<p class="small">No outreach has been sent. ${esc(r.limitations[0])}</p></div>`;
+  const exportLink=$('#review-output .export');
+  if(exportLink&&r.export){if(exportLink.dataset.blob)URL.revokeObjectURL(exportLink.dataset.blob);exportLink.href=exportLink.dataset.blob=URL.createObjectURL(new Blob([r.export],{type:'text/markdown;charset=utf-8'}));}
   $('#review-output').querySelectorAll('[data-select-edge]').forEach(b=>b.addEventListener('click',()=>{$('#graph-optional').open=true;select('edge',b.dataset.selectEdge);}));
 }
 function renderPapers() {
@@ -413,7 +415,7 @@ async function runReview() {
       job=await api('/api/jobs/'+job.id);
     }
     if(job.status==='failed')throw new Error(job.error);
-    const report=await api('/api/reports/'+job.report_id);
+    const report=job.report||await api('/api/reports/'+job.report_id);   // serverless deployments return the report with the job
     if(audienceRole!==$('#audience-role').value || reportLanguage!==$('#language').value){progress.textContent='Review saved for the previous audience. Review again for the current selection.';return;}
     if(snapshot!==state.graph){progress.textContent='Review saved for the previous map. Run a review for the current search.';return;}
     state.report=report;if(report.live){state.live=report.live;renderLive();}

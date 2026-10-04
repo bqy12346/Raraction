@@ -12,6 +12,7 @@ from pathlib import Path
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen, build_opener
 from atlas.integrations import NoRedirect
+from atlas.runtime import DATA_DIR  # writable: data/ locally, /tmp on Vercel
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_HOSTS = {'www.ebi.ac.uk', 'www.ncbi.nlm.nih.gov', 'eutils.ncbi.nlm.nih.gov', 'clinicaltrials.gov', 'api.openai.com'}
@@ -158,7 +159,7 @@ def deduplicate(papers, include_preprints=False):
 
 
 def live_search(query, kind='auto', include_preprints=False, cache_dir=None, refresh=False):
-    cache_dir = Path(cache_dir or ROOT / 'data' / 'live')
+    cache_dir = Path(cache_dir or DATA_DIR / 'live')
     cache_dir.mkdir(parents=True, exist_ok=True)
     key = hashlib.sha256(json.dumps([query.casefold(), kind, include_preprints]).encode()).hexdigest()
     path = cache_dir / (key + '.json')

@@ -3,6 +3,7 @@ import argparse
 import json
 import mimetypes
 import os
+import re
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -21,6 +22,8 @@ from atlas.audiences import audience
 from atlas.leads import ranked_leads
 from atlas.communities import DIRECTORY
 from atlas.people import FILES as PEOPLE_FILES
+from atlas import kv
+from atlas.runtime import SERVERLESS
 from atlas.chat import ChatFailed, ChatUnavailable, chat_available, chat_reply
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,11 +48,22 @@ class Application:
         elif not isinstance(inferred, bool):
             raise ValueError('include_inferred must be boolean')
         if data.get('graph_id'):
-            view = self.store.graph_view(data['graph_id'])
-            if not view:
-                raise ValueError('Live graph not found')
+            view = self.store.graph_view(data['graph_id']) or self.rebuild_view(data)
             return view_graph(view, min_confidence, inferred)
         return filtered_graph(self.store.dataset(), data.get('focus', FOCUS), min_confidence, inferred)
+
+    def rebuild_view(self, data):
+        # Serverless instances do not share local storage. Without shared KV, a graph saved by another
+        # instance is rebuilt here from its query (same id), using public sources and the local cache.
+        graph_id, query = data.get('graph_id'), data.get('live_query')
+        if not isinstance(graph_id, str) or not re.fullmatch(r'[0-9a-f-]{36}', graph_id) or not isinstance(query, str) or not 1 <= len(query.strip()) <= 160:
+            raise ValueError('Live graph not found')
+        live = live_search(query.strip(), 'auto')
+        focus = data.get('live_focus')
+        view = build_live_view(live, focus if focus in {x['id'] for x in live['identities']} else None)
+        view['id'] = graph_id
+        self.store.save_graph_view(view)
+        return view
 
     def live_graph(self, data):
         query = data.get('query', '')
@@ -111,8 +125,16 @@ class Application:
             except Exception as exc:
                 with self.lock:
                     self.jobs[id].update(status='failed', error='Analysis failed (' + type(exc).__name__ + '). Please retry.')
-        self.pool.submit(run)
-        return dict(self.jobs[id])
+        if not SERVERLESS:
+            self.pool.submit(run)
+            return dict(self.jobs[id])
+        # Serverless: work stops once the response is sent and the next poll may reach another
+        # instance, so run the review inside this request and return the report with the job.
+        run()
+        job = dict(self.jobs[id])
+        if job['status'] == 'complete':
+            job['report'] = self.store.report(job['report_id'])
+        return job
 
 
 def make_handler(app):
@@ -139,7 +161,8 @@ def make_handler(app):
             try:
                 path = parsed.path
                 if path == '/api/health':
-                    return self.send(200, {'status': 'ok', 'role': 'patient', 'openai_configured': bool(os.environ.get('OPENAI_API_KEY')), 'agent': configuration(), 'chat': chat_available(), 'database': 'SQLite'})
+                    return self.send(200, {'status': 'ok', 'role': 'patient', 'openai_configured': bool(os.environ.get('OPENAI_API_KEY')), 'agent': configuration(), 'chat': chat_available(), 'database': 'SQLite',
+                                               'runtime': 'serverless' if SERVERLESS else 'server', 'shared_storage': kv.enabled()})
                 if path == '/api/coverage':
                     return self.send(200, coverage())
                 if path == '/api/graph':
@@ -196,7 +219,8 @@ def make_handler(app):
                 if not isinstance(data, dict):
                     raise ValueError('Expected a JSON object')
                 if self.path == '/api/analysis':
-                    return self.send(202, app.start_job(data))
+                    job = app.start_job(data)
+                    return self.send(202 if job['status'] in ('queued', 'running') else 200, job)
                 if self.path == '/api/chat':
                     try:
                         return self.send(200, app.chat(data))
