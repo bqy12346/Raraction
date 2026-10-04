@@ -18,6 +18,8 @@ from atlas.store import Store
 from atlas.live_graph import build_live_view, view_graph
 from atlas.integrations import configuration, brightdata_page
 from atlas.audiences import audience
+from atlas.leads import ranked_leads
+from atlas.communities import DIRECTORY
 
 ROOT = Path(__file__).resolve().parents[1]
 FOCUS = 'MONDO:0012812'
@@ -136,6 +138,8 @@ def make_handler(app):
                     return self.send(200, coverage())
                 if path == '/api/graph':
                     return self.send(200, app.graph(params))
+                if path == '/api/leads':
+                    return self.send(200, ranked_leads(app.graph(params)))
                 if path == '/api/search':
                     q = params.get('q', '').strip()
                     if not 1 <= len(q) <= 160:
@@ -161,6 +165,7 @@ def make_handler(app):
                         return self.send(200, report['export'], 'text/markdown; charset=utf-8', {'Content-Disposition': 'attachment; filename="research-proposal.md"'})
                     return self.send(200, report)
                 static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/styles.css': 'styles.css', '/favicon.svg': 'favicon.svg'}
+                static.update({'/lead-images/' + c['id'].replace(':', '-') + '.png': 'lead-images/' + c['id'].replace(':', '-') + '.png' for c in DIRECTORY})
                 if path in static:
                     file = ROOT / 'web' / static[path]
                     return self.send(200, file.read_bytes(), (mimetypes.guess_type(str(file))[0] or 'application/octet-stream') + '; charset=utf-8')
