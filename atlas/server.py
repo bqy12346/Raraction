@@ -200,13 +200,15 @@ def make_handler(app):
                     file = ROOT / 'web' / static[path]
                     mime = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
                     return self.send(200, file.read_bytes(), mime + '; charset=utf-8' if mime.startswith(('text/', 'application/javascript', 'image/svg')) else mime)
-                return self.send(404, {'error': 'Not found'})
+                return self.send(404, {'error': 'Not found', 'path': path})
             except ValueError as exc:
                 return self.send(400, {'error': str(exc)})
             except Exception:
                 return self.send(500, {'error': 'Unable to load this resource. Please retry.'})
 
         def do_POST(self):
+            # Route on the parsed path, like do_GET: proxies may pass a query string or an absolute URL.
+            route = urlparse(self.path).path.rstrip('/') or '/'
             origin = self.headers.get('Origin')
             # Same-origin check. Behind Vercel's proxy the visitor's host arrives in X-Forwarded-Host.
             hosts = {self.headers.get('Host', '')}
@@ -216,25 +218,25 @@ def make_handler(app):
                 return self.send(403, {'error': 'Cross-origin requests are not allowed'})
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                limit = 65536 if self.path == '/api/chat' else 16384   # a conversation needs more room than a query
+                limit = 65536 if route == '/api/chat' else 16384   # a conversation needs more room than a query
                 if not 0 < length <= limit:
                     return self.send(413, {'error': 'Request body must be 1–%d bytes' % limit})
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError('Expected a JSON object')
-                if self.path == '/api/analysis':
+                if route == '/api/analysis':
                     job = app.start_job(data)
                     return self.send(202 if job['status'] in ('queued', 'running') else 200, job)
-                if self.path == '/api/chat':
+                if route == '/api/chat':
                     try:
                         return self.send(200, app.chat(data))
                     except ChatUnavailable as exc:
                         return self.send(503, {'error': str(exc), 'unavailable': True})
                     except ChatFailed as exc:
                         return self.send(502, {'error': str(exc)})
-                if self.path == '/api/live-graph':
+                if route == '/api/live-graph':
                     return self.send(200, app.live_graph(data))
-                if self.path == '/api/live-search':
+                if route == '/api/live-search':
                     q = data.get('query', '')
                     if not isinstance(q, str) or not 1 <= len(q.strip()) <= 160:
                         raise ValueError('Enter 1–160 characters')
@@ -245,7 +247,7 @@ def make_handler(app):
                     if not isinstance(preprints, bool):
                         raise ValueError('include_preprints must be boolean')
                     return self.send(200, live_search(q.strip(), kind, preprints))
-                return self.send(404, {'error': 'Not found'})
+                return self.send(404, {'error': 'Not found', 'path': route})
             except (ValueError, TypeError) as exc:
                 return self.send(400, {'error': str(exc)})
             except Exception:

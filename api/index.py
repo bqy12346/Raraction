@@ -21,8 +21,8 @@ def original_path(path):
     parts = urlsplit(path)
     query = parse_qsl(parts.query, keep_blank_values=True)
     target = next((value for key, value in query if key == '__path'), None)
-    if target is None:
-        return path
+    if target is None:   # already the original path; drop any scheme/host the runtime may include
+        return parts.path + ('?' + parts.query if parts.query else '')
     rest = [(key, value) for key, value in query if key != '__path']
     return '/api/' + target.lstrip('/') + ('?' + urlencode(rest) if rest else '')
 

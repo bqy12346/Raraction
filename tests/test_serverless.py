@@ -131,3 +131,45 @@ class ServerlessOriginTests(unittest.TestCase):
             self.assertEqual(self.post(visitor), 400)   # passed the origin check; the empty query is then rejected
             self.assertEqual(self.post({'Origin': 'https://evil.example', 'X-Forwarded-Host': 'asterisk.vercel.app'}), 403)
         self.assertEqual(self.post(visitor), 403)   # the local server keeps the strict Host-only check
+
+
+class ProxyPathTests(unittest.TestCase):
+    """Vercel's rewrite can hand POSTs a path with a query string; routing must use the parsed path."""
+    def setUp(self):
+        import threading
+        from http.server import ThreadingHTTPServer
+        from atlas.server import make_handler
+        self.tmp = tempfile.TemporaryDirectory(dir=TEST_TMP)
+        self.app = Application(Path(self.tmp.name) / 'p.sqlite')
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), make_handler(self.app))
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.url = 'http://127.0.0.1:' + str(self.server.server_port)
+
+    def tearDown(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.app.pool.shutdown(wait=True)
+        self.tmp.cleanup()
+
+    def post(self, path):
+        from urllib.error import HTTPError
+        from urllib.request import Request, urlopen
+        try:
+            with urlopen(Request(self.url + path, data=b'{"query": ""}', headers={'Content-Type': 'application/json'}), timeout=10) as r:
+                return r.status, json.loads(r.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+
+    def test_post_routes_ignore_query_strings_and_trailing_slashes(self):
+        for path in ('/api/live-search', '/api/live-search?__path=live-search', '/api/live-search/'):
+            status, body = self.post(path)
+            self.assertEqual((status, body['error']), (400, 'Enter 1–160 characters'), path)
+        status, body = self.post('/api/nope?x=1')
+        self.assertEqual((status, body['path']), (404, '/api/nope'))
+
+    def test_entry_point_strips_absolute_urls(self):
+        with patch.dict(os.environ, {'ATLAS_DATA_DIR': self.tmp.name}):
+            sys.path.insert(0, str(ROOT))
+            entry = importlib.import_module('api.index')
+        self.assertEqual(entry.original_path('https://asterisk-flame.vercel.app/api/live-graph'), '/api/live-graph')
+        self.assertEqual(entry.original_path('https://x.vercel.app/api/graph?focus=a'), '/api/graph?focus=a')
