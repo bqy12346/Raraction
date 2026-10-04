@@ -1,4 +1,4 @@
-<img width="1448" height="1086" alt="asterisk-logo-line" src="https://github.com/user-attachments/assets/04e3759a-28bd-4d57-ac01-60c6b350022e" />
+<img width="1200" height="600" alt="asterisk-logo-line" src="https://github.com/user-attachments/assets/04e3759a-28bd-4d57-ac01-60c6b350022e" />
 **English** | [简体中文](README.zh-CN.md)
 
 # Asterisk — AI Atlas for Rare Diseases
