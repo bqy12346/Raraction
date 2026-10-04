@@ -6,7 +6,7 @@ PROFILES = {
     'expert': ('Expert',
                'Use precise scientific and clinical terminology. Distinguish gene-level from variant-specific mechanisms, association from causation, study designs, model systems, independent evidence and confounding. Emphasize phenotype specificity, study population, endpoints, evidence quality, evidence maturity, reusable infrastructure, feasibility and validation dependencies. Discuss falsifiable hypotheses and experimental validation only where supported by the packet. Keep research leads distinct from clinical recommendations; do not assess individual eligibility, prescribe, or invent commercial, regulatory, funding or efficacy claims.'),
 }
-LANGUAGES = {'en': 'English', 'zh-CN': 'Simplified Chinese', 'de': 'German'}
+LANGUAGES = {'en': 'English', 'zh-CN': 'Simplified Chinese', 'zh-Hant': 'Traditional Chinese', 'de': 'German'}
 
 
 def audience(role='patient', language='en'):

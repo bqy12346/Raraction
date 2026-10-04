@@ -24,7 +24,7 @@ Agent provider setup, including **Bright Data** and a **Lovable backend agent**,
 - **Living world map.** Behind the home search, a solid world map (Natural Earth 1:50m, Antarctica omitted) stays dim and lights up in brand blue, with country borders, around the pointer. Home text uses dark ink with a soft halo so it stays readable over the lit map.
 - **Liquid-glass controls.** The language picker, the identity picker, and **Sources & coverage** are frosted glass pills with a pointer-following sheen and spring animations. They support keyboard navigation (arrows, Enter, Esc, Tab).
 - **Sources & coverage dialog.** Color-coded source tiles show whether each source is live, curated, unavailable, or planned. The dialog also lists known gaps and presents the 10× planning hypothesis as a stat card.
-- **English / Simplified Chinese / German.** The language choice is saved locally and initially follows the browser language. The interface, intro, pickers, and coverage dialog are fully translated. Source evidence, publications, and reports keep their original language; search using English names or standard identifiers. Translations live in `web/i18n.js` (Chinese) and `web/i18n-de.js` (German); detailed backend explanations remain in their source language.
+- **English / Simplified Chinese / Traditional Chinese / German.** The language choice is saved locally and initially follows the browser language. The interface, intro, pickers, and coverage dialog are fully translated. Source evidence, publications, and reports keep their original language; search using English names or standard identifiers. Translations live in `web/i18n.js` (Simplified Chinese), `web/i18n-zh-hant.js` (Traditional Chinese) and `web/i18n-de.js` (German); detailed backend explanations remain in their source language.
 
 Brand source files (logo, mark, app icon) are in [docs/brand](docs/brand).
 
@@ -147,6 +147,7 @@ flowchart LR
 | `api/index.py`, `vercel.json` | Vercel entry point and deployment configuration |
 | `web/index.html`, `web/app.js`, `web/styles.css` | Responsive, dependency-free page: home search, interactive SVG graph, paper view, evidence inspector, action view, coverage dialog |
 | `web/i18n.js` | Interface localization and Simplified Chinese translations |
+| `web/i18n-zh-hant.js` | Traditional Chinese (Taiwan phrasing) interface translations |
 | `web/i18n-de.js` | German interface translations |
 | `web/intro.js` | First-visit identity intro and its hand-off animation |
 | `web/glass-select.js` | Liquid-glass pickers layered over the native `<select>` elements, which stay the source of truth |
@@ -217,7 +218,7 @@ Example analysis body:
 
 **Live-search body:** `{"query":"STXBP1","kind":"auto","include_preprints":false}`. Supported primary search kinds are disease, gene and symptom, with auto resolution. Additional curated nodes can be searched by organization, mechanism, asset, paper, study, researcher, or institution.
 
-**Audiences.** AI reviews support two `role` values, with `language` set to `en`, `zh-CN` or `de`:
+**Audiences.** AI reviews support two `role` values, with `language` set to `en`, `zh-CN`, `zh-Hant` or `de`:
 
 - `patient` (**Patient & family**, the default): plain language, every technical term explained, and a concrete question to ask an expert.
 - `expert` (**Expert**): one profile for researchers, clinicians, and R&D professionals. It uses scientific and clinical terminology, and covers mechanism, phenotype specificity, endpoints, evidence maturity, and feasibility.
