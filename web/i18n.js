@@ -7,6 +7,7 @@
     "Who's exploring today?":'请选择你的身份', 'Patient & family':'患者与家属', 'I, or someone I love, lives with a rare disease.':'我或我爱的人正在面对罕见病。',
     'Expert':'专家', 'I research, treat or develop therapies for rare diseases.':'我从事罕见病的研究、诊疗或疗法开发。', 'You can change this anytime in the top right.':'之后可随时在右上角更改。',
     'Toggle legend size':'切换图例大小',
+    'Refresh papers & studies':'刷新论文与研究', 'AI tools':'AI 工具',
     // Connection details & source evidence (graph detail panel; curated starter text and live-graph templates).
     'collapsed':'折叠路径', 'symptom':'症状', 'Seizure':'癫痫发作', 'Hypotonia':'肌张力低下', 'Global developmental delay':'全面发育迟缓', 'Developmental delay':'发育迟缓',
     'STXBP1-related disorder':'STXBP1 相关疾病', 'SLC6A1-related disorder':'SLC6A1 相关疾病',
