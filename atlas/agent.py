@@ -212,6 +212,13 @@ def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, rol
     return report
 
 
+PROPOSAL_HEADINGS = {
+    'en': {'review': 'AI review for the selected audience', 'findings': 'Findings', 'actions': 'Suggested next steps', 'missing': 'Missing evidence'},
+    'zh-CN': {'review': '面向所选角色的 AI 审阅', 'findings': '研究发现', 'actions': '建议下一步', 'missing': '仍缺少的证据'},
+    'de': {'review': 'KI-Prüfung für die ausgewählte Zielgruppe', 'findings': 'Ergebnisse', 'actions': 'Empfohlene nächste Schritte', 'missing': 'Fehlende Evidenz'},
+}
+
+
 def proposal_markdown(report, graph):
     edges = {e['id']: e for e in graph['edges']}
     sources = {s['id']: s for s in graph['sources']}
@@ -219,9 +226,10 @@ def proposal_markdown(report, graph):
              'This is a research discussion draft. Biological compatibility, consent, access, and study eligibility remain to be checked.', '']
     review = report.get('agent_review')
     if review:
-        chinese = report.get('language') == 'zh-CN'
-        lines += ['## ' + ('面向所选角色的 AI 审阅' if chinese else 'AI review for the selected audience'), '', review['summary'], '']
-        for key, title in (('findings', '研究发现' if chinese else 'Findings'), ('actions', '建议下一步' if chinese else 'Suggested next steps')):
+        heading = PROPOSAL_HEADINGS.get(report.get('language'), PROPOSAL_HEADINGS['en'])
+        lines += ['## ' + heading['review'], '', review['summary'], '']
+        for key in ('findings', 'actions'):
+            title = heading[key]
             lines += ['### ' + title, '']
             for item in review[key]:
                 lines += ['- ' + item['statement'] + ' (' + item['status'] + ')', '  ' + item['limitations']]
@@ -233,7 +241,7 @@ def proposal_markdown(report, graph):
                     if not refs:
                         lines.append('  - ' + id)
             lines.append('')
-        lines += ['### ' + ('仍缺少的证据' if chinese else 'Missing evidence'), ''] + ['- ' + x for x in review['missing_evidence']] + ['']
+        lines += ['### ' + heading['missing'], ''] + ['- ' + x for x in review['missing_evidence']] + ['']
     for action in report['actions']:
         lines += ['## ' + action['title'], '', action['step'], '', '**Check before proceeding:** ' + action['check'], '', 'Evidence:']
         cited = set()

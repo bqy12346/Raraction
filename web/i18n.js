@@ -239,25 +239,31 @@
     'Related through shared research or resources; may focus on a different condition.':'通过共同研究或资源找到，关注的疾病可能不同。',
     'The sources link this person or organization to your search.':'来源资料显示此人或机构与你的搜索有关。',
     'Use the listed contact details to ask about their work or support.':'可通过所列联系方式咨询研究或支持服务。',
-    'Contact details are not listed. Visit the source or official website to find them.':'暂无联系方式，可前往来源页面或官方网站查找。'
+    'Contact details are not listed. Visit the source or official website to find them.':'暂无联系方式，可前往来源页面或官方网站查找。',
+    'Public organization profile / contact source':'机构公开资料 / 联系方式来源',
+    'Review again to generate a report for the selected audience and language.':'请重新审阅，以生成适合所选身份和语言的报告。'
   });
   let language;
   try { language = localStorage.getItem('raraction-language'); } catch {}
-  if (!['en','zh-CN'].includes(language)) language = navigator.language.startsWith('zh') ? 'zh-CN' : 'en';
+  if (!['en','zh-CN','de'].includes(language)) language = navigator.language.startsWith('zh') ? 'zh-CN' : navigator.language.startsWith('de') ? 'de' : 'en';
   const select = document.createElement('select');
-  select.id = 'language'; select.setAttribute('aria-label', 'Language / 语言');
-  select.innerHTML = '<option value="en">English</option><option value="zh-CN">简体中文</option>';
+  select.id = 'language'; select.setAttribute('aria-label', 'Language / 语言 / Sprache');
+  select.innerHTML = '<option value="en">English</option><option value="zh-CN">简体中文</option><option value="de">Deutsch</option>';
   document.querySelector('.header-right').prepend(select);
   // Helpers for templated detail-panel text: look terms up in the dictionary, keep unknown ones verbatim.
-  const term = value => zh[value] || zh[value.toLowerCase()] || value;
+  const lookup = value => locales[language].dict[value] || locales[language].dict[value.toLowerCase()];
+  const term = value => lookup(value) || value;
   const trialStatus = {'recruiting':'招募中', 'not yet recruiting':'尚未开始招募', 'active not recruiting':'进行中（已停止招募）', 'completed':'已完成',
     'enrolling by invitation':'受邀入组', 'suspended':'已暂停', 'terminated':'已终止', 'withdrawn':'已撤回', 'unknown':'状态未知'};
-  const studyStatus = value => trialStatus[value.toLowerCase().replace(/_/g, ' ')] || value;
+  const studyStatus = value => locales[language].trialStatus[value.toLowerCase().replace(/_/g, ' ')] || value;
+  // Chinese lives in this file; other languages (i18n-de.js) register {title, dict, trialStatus, rules} on window.asteriskLocales.
+  const locales = {'zh-CN': {title: 'Asterisk · 罕见病知识图谱', dict: zh, trialStatus}, ...window.asteriskLocales};
   function translate(text) {
     const trimmed = text.trim();
-    let value = zh[trimmed] || zh[trimmed.toLowerCase()];
+    const locale = locales[language];
+    let value = lookup(trimmed);
     if (!value) {
-      const rules = [
+      const rules = locale.rules ? (locale.compiled ||= locale.rules(term, studyStatus)) : [
         [/^(\d+) nodes · (\d+) connections$/, '$1 个节点 · $2 条联系'],
         [/^(\d+) documented · (\d+) proposed$/, '$1 条有记录 · $2 条假设'],
         [/^\((.+) available\)$/, '（$1 已配置）'],
@@ -292,7 +298,10 @@
         [/^Searching public databases for “(.+)”… This usually takes 10–30 seconds\.$/, '正在公共数据库中检索“$1”…通常需要 10–30 秒。'],
         [/^Search failed: (.+)$/, (_, reason) => '搜索失败：' + term(reason)],
         [/^The server returned an unexpected response \(HTTP (\d+)\)\.$/, '服务器返回了意外的响应（HTTP $1）。'],
-        [/ · /, line => line.split(' · ').map(term).join(' · ')]
+        [/^(\d+) sourced leads?$/, '$1 条有来源的线索'],
+        [/^Phone: (.+)$/, '电话：$1'],
+        [/^(.+) ↗$/, (_, label) => term(label) + ' ↗'],
+        [/^.+ · .+$/, line => line.split(' · ').map(term).join(' · ')]
       ];
       for (const [pattern, replacement] of rules) if (pattern.test(trimmed)) { value = trimmed.replace(pattern, replacement); break; }
     }
@@ -302,14 +311,14 @@
     observer.disconnect();
     document.documentElement.lang = language;
     select.value = language;
-    document.title = language === 'zh-CN' ? 'Asterisk · 罕见病知识图谱' : 'Asterisk · Rare Disease Atlas';
+    document.title = locales[language]?.title || 'Asterisk · Rare Disease Atlas';
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) {
       const node = walker.currentNode;
       if (node.parentElement.closest('script,style,#language,.locale-note,.glass-select,.chat-text')) continue;
       let record = records.get(node);
       if (!record || node.nodeValue !== record.rendered) record = {original: node.nodeValue};
-      record.rendered = language === 'zh-CN' ? translate(record.original) : record.original;
+      record.rendered = language !== 'en' ? translate(record.original) : record.original;
       node.nodeValue = record.rendered; records.set(node, record);
     }
     for (const element of document.querySelectorAll('[placeholder],[title],[aria-label]')) {
@@ -318,7 +327,7 @@
         if (!element.hasAttribute(attribute)) continue;
         const key = 'locale' + attribute.replaceAll('-', '');
         if (!(key in element.dataset)) element.dataset[key] = element.getAttribute(attribute);
-        element.setAttribute(attribute, language === 'zh-CN' ? translate(element.dataset[key]) : element.dataset[key]);
+        element.setAttribute(attribute, language !== 'en' ? translate(element.dataset[key]) : element.dataset[key]);
       }
     }
     observer.observe(document.body, {childList: true, subtree: true, characterData: true});
