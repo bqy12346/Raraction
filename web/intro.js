@@ -17,12 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
   locked.forEach(el => { el.inert = true; });
   let busy = false;
 
-  // Centre the logo above the role cards, scaled up; the same element later animates back to transform:none.
+  // Centre the logo above the role cards, scaled up, and below the pinned language picker; the same element later
+  // animates back to transform:none.
+  const picker = document.querySelector('.glass-select[data-for=language]');
   function place() {
     mark.style.transform = 'none';
     const r = mark.getBoundingClientRect(), b = body.getBoundingClientRect();
     const scale = Math.min(1.5, (innerWidth - 48) / r.width);
-    const cy = Math.max(r.height * scale / 2 + 24, b.top - 44 - r.height * scale / 2);
+    const top = (picker ? picker.getBoundingClientRect().bottom : 0) + 16;
+    const cy = Math.max(r.height * scale / 2 + top, b.top - 44 - r.height * scale / 2);
     mark.style.transform = `translate(${innerWidth / 2 - (r.left + r.width / 2)}px, ${cy - (r.top + r.height / 2)}px) scale(${scale})`;
   }
   place();
