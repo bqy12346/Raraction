@@ -574,7 +574,15 @@ for(const id of ['communities','research','indirect','no-contact','criteria'])$(
 $('#expand-graph').addEventListener('click',()=>{const panel=$('#graph-optional'),expanded=panel.classList.toggle('expanded');$('#expand-graph').setAttribute('aria-pressed',String(expanded));$('#expand-graph').textContent=expanded?'Restore workspace size':'Enlarge graph workspace';});
 $('#graph-science').addEventListener('change',()=>{state.positions={};drawGraph();});
 // Experts start with the graph open; patients and families start with people and the AI guide.
-$('#audience-role').addEventListener('change',()=>{$('#graph-optional').open=$('#audience-role').value==='expert';});
+// Section order: patients see communities, researchers, graph, AI; experts see graph, researchers, communities, AI.
+function applyRoleLayout(){
+  const expert=$('#audience-role').value==='expert',graph=$('#graph-optional'),guide=$('#ai-guide');
+  graph.open=expert;
+  if(expert){$('.people-hub').before(graph);$('#community-results').before($('#research-results'));}
+  else{guide.before(graph);$('#research-results').before($('#community-results'));}
+}
+$('#audience-role').addEventListener('change',applyRoleLayout);
+applyRoleLayout();
 
 // ---- Ask-your-own-question chat (POST /api/chat). Grounded in the map on screen; citations are server-checked. ----
 const chat={messages:[],key:null,pending:false};

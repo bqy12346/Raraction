@@ -493,3 +493,4 @@ body.searching #search-form button[type=submit]{cursor:progress}
 .ai-review-panel .progress:empty{display:none}
 @media(max-width:700px){.ai-review-panel .ai-chat{padding:16px 14px}.composer-bar{align-items:flex-end}.chat-tool{font-size:12px;padding:6px 10px}}
 @media(prefers-reduced-motion:reduce){.chat-tool{transition:none}.chat-tool:hover,.chat-tool:active{transform:none}}
+.graph-optional+.people-hub{margin-top:20px}
