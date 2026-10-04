@@ -1,6 +1,7 @@
 """Explainable ranking of sourced outreach leads, never treatment relevance."""
 from atlas.graph import shortest_path
 from atlas.communities import enrich_community
+from atlas.people import enrich_person
 
 
 def ranked_leads(graph):
@@ -10,7 +11,7 @@ def ranked_leads(graph):
     for raw in graph['nodes']:
         if raw['kind'] not in ('organization', 'asset', 'institution', 'researcher'):
             continue
-        node = enrich_community(raw)
+        node = enrich_person(enrich_community(raw))
         path = shortest_path(graph, graph['focus'], node['id'])
         if path is None:
             continue

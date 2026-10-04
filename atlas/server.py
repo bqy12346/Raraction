@@ -20,6 +20,7 @@ from atlas.integrations import configuration, brightdata_page
 from atlas.audiences import audience
 from atlas.leads import ranked_leads
 from atlas.communities import DIRECTORY
+from atlas.people import FILES as PEOPLE_FILES
 from atlas.chat import ChatFailed, ChatUnavailable, chat_available, chat_reply
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -171,6 +172,7 @@ def make_handler(app):
                     return self.send(200, report)
                 static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/styles.css': 'styles.css', '/world-map.js': 'world-map.js', '/home-world.js': 'home-world.js', '/glass-select.js': 'glass-select.js', '/intro.js': 'intro.js', '/favicon.svg': 'favicon.svg', '/apple-touch-icon.png': 'apple-touch-icon.png'}
                 static.update({'/lead-images/' + c['id'].replace(':', '-') + '.png': 'lead-images/' + c['id'].replace(':', '-') + '.png' for c in DIRECTORY})
+                static.update({'/lead-images/' + f: 'lead-images/' + f for f in PEOPLE_FILES})
                 if path in static:
                     file = ROOT / 'web' / static[path]
                     mime = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
