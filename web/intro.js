@@ -59,8 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // The overlay stays visible on its own class while the page-wide intro flags come off.
     intro.classList.add('leaving');
     mark.style.position = 'relative'; mark.style.zIndex = '1002';
+    const pickerFrom = picker && picker.getBoundingClientRect();
     root.classList.remove('intro-on', 'intro-ready');
     locked.forEach(el => { el.inert = false; });
+
+    // The language picker slides from its pinned corner back into the header, above the fading overlay.
+    let pickerMove = null;
+    if (picker && !reduceMotion) {
+      const pickerTo = picker.getBoundingClientRect();
+      picker.style.zIndex = '1003';
+      pickerMove = picker.animate([
+        {transform: `translate(${pickerFrom.left - pickerTo.left}px, ${pickerFrom.top - pickerTo.top}px)`},
+        {transform: 'none'}
+      ], {duration: 820, easing: ease});
+    }
 
     // 1. The chosen card becomes a glass pill and flies into the audience picker; the others fade away.
     const others = [...intro.querySelectorAll('.intro-title, .intro-note, .intro-role')].filter(el => el !== card);
@@ -98,6 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const done = Math.max(1150, 620 + pieces.length * 90 + 650);
     setTimeout(() => {
       markMove.cancel(); mark.style.position = mark.style.zIndex = '';
+      if (pickerMove) pickerMove.cancel();
+      if (picker) picker.style.zIndex = '';
       intro.remove(); if (ghost) ghost.remove();
       const search = document.getElementById('home-search');
       if (search && document.body.classList.contains('is-home')) search.focus({preventScroll: true});
