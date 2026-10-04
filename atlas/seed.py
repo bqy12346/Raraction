@@ -41,7 +41,7 @@ def build_dataset():
     node('HP:0001252', 'symptom', 'Hypotonia', ['low muscle tone'], cluster='Shared observations', url='https://hpo.jax.org/browse/term/HP:0001252')
     node('atlas:org:stx', 'organization', 'STXBP1 Foundation', ['STXBP1 patient group'], cluster='Shared infrastructure', url='https://www.stxbp1disorders.org/')
     node('atlas:org:slc', 'organization', 'SLC6A1 Connect', ['SLC6A1 patient group'], cluster='Shared infrastructure', url='https://slc6a1connect.org/')
-    node('atlas:asset:simons', 'asset', 'Simons Searchlight registry', ['registry', 'natural history', 'biorepository'], cluster='Shared infrastructure', url='https://www.simonssearchlight.org/')
+    node('atlas:asset:simons', 'asset', 'Simons Searchlight registry', ['registry', 'natural history', 'biorepository'], cluster='Shared infrastructure', url='https://www.simonssearchlight.org/', description='Existing cross-gene research infrastructure. Access, consent, data fields, and suitability must be checked with the registry team.')
 
     edge('stx-gene', stx, 'NCBIGene:6812', 'associated_with_gene', 'Pathogenic STXBP1 variants are associated with this disorder.', ['gr-stx'])
     edge('slc-gene', slc, 'NCBIGene:6529', 'associated_with_gene', 'Pathogenic SLC6A1 variants are associated with this disorder.', ['gr-slc'])
@@ -78,7 +78,7 @@ def build_dataset():
             if first.get('fullName'):
                 author_id = 'atlas:author:' + pmid + ':0'
                 affiliations = first.get('authorAffiliationDetailsList', {}).get('authorAffiliation', [])
-                node(author_id, 'researcher', first['fullName'], [], cluster='Published evidence', affiliation='; '.join(x.get('affiliation', '') for x in affiliations))
+                node(author_id, 'researcher', first['fullName'], [], cluster='Published evidence', affiliation='; '.join(x.get('affiliation', '') for x in affiliations), identity_note='Publication-scoped author, not OpenAlex-disambiguated. Contact through the publication; current affiliation is unverified.')
                 edge('author-' + pmid, 'PMID:' + pmid, author_id, 'authored_by', 'Named author on this publication; potential research contact subject to expertise and identity checks.', ['pmid-' + pmid])
 
     trial_path = snapshots / 'trial.json'

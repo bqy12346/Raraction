@@ -1,6 +1,10 @@
-__pycache__/
-*.pyc
 .env
+__pycache__/
+node_modules/
+.venv/
+*.pyc
+.DS_Store
+data/raw/
 .conda/
 data/atlas.sqlite*
 data/live/
@@ -8,3 +12,4 @@ data/reports/
 data/test-tmp/
 data/browser-profile/
 data/qa/
+data/people-ui-profile/

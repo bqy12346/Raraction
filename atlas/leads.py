@@ -20,7 +20,7 @@ def ranked_leads(graph):
         support = round(100 * sum(e['status'] == 'observed' for e in selected) / max(1, len(selected)))
         website = node.get('website') or node.get('url')
         contact = 100 if node.get('email') or node.get('phone') else 60 if node.get('contact_url') else 0
-        completeness = round(100 * sum(bool(node.get(k)) for k in ('image', 'email', 'phone')) / 3)
+        completeness = round(100 * sum(bool(node.get(k)) for k in ('description', 'image', 'email', 'phone')) / 4)
         criteria = [dict(label='Search connection', value=relevance, weight=45), dict(label='Source support', value=support, weight=25), dict(label='Contact route', value=contact, weight=20), dict(label='Profile details', value=completeness, weight=10)]
         refs = {ev['source_id'] for e in selected for ev in e['evidence']}
         citations = [sources[id] for id in sorted(refs) if id in sources]

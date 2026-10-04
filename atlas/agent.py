@@ -38,16 +38,16 @@ MODEL_SCHEMA = {'type': 'object', 'additionalProperties': False, 'properties': {
 }, 'required': ['summary', 'findings', 'actions', 'missing_evidence']}
 
 
-def model_call(packet, task, previous=None):
+def model_call(packet, task, previous=None, schema=MODEL_SCHEMA, schema_name='maria_evidence_review'):
     if configuration()['provider'] == 'gemini':
-        return gemini_agent(packet, SYSTEM + '\n' + task, MODEL_SCHEMA, previous)
+        return gemini_agent(packet, SYSTEM + '\n' + task, schema, previous)
     if configuration()['provider'] == 'webhook':
-        return external_agent(packet, SYSTEM + '\n' + task, MODEL_SCHEMA, previous)
+        return external_agent(packet, SYSTEM + '\n' + task, schema, previous)
     body = {'model': os.environ.get('OPENAI_MODEL', 'gpt-4.1-mini'), 'store': False,
             'instructions': SYSTEM + '\n' + task,
             'input': json.dumps({'evidence_packet': packet, 'previous_draft': previous}, ensure_ascii=False),
             'max_output_tokens': 3500,
-            'text': {'format': {'type': 'json_schema', 'name': 'maria_evidence_review', 'strict': True, 'schema': MODEL_SCHEMA}}}
+            'text': {'format': {'type': 'json_schema', 'name': schema_name, 'strict': True, 'schema': schema}}}
     response = request_json('https://api.openai.com/v1/responses', body,
                             {'Authorization': 'Bearer ' + os.environ['OPENAI_API_KEY']}, timeout=90)
     if response.get('status') != 'completed':
@@ -77,6 +77,12 @@ def validate_model_review(review, allowed_ids):
             if len(item['statement']) > 4000:
                 raise ValueError('Oversized review statement')
     return review
+
+
+def citable_ids(packet):
+    """IDs a model may cite: packet edges, sources and live candidates. Anything else is fabricated."""
+    return ({e['id'] for e in packet['edges']} | {s['id'] for s in packet['sources']} | {p['id'] for p in packet['live_candidates']}
+            | {t['id'] for t in packet['live_studies']} | {c['id'] for c in packet['community_candidates']})
 
 
 def evidence_packet(graph, live=None):
@@ -112,7 +118,7 @@ def evidence_packet(graph, live=None):
     return packet
 
 
-def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, role='maria', language='en'):
+def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, role='patient', language='en'):
     reader = audience(role, language)
     progress('audit')
     sources = {s['id']: s for s in graph['sources']}
@@ -172,12 +178,12 @@ def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, rol
             report['agent_error'] = 'Agent provider is not configured. Evidence checks completed; no model review was run.'
         else:
             packet = evidence_packet(graph, live)
-            allowed = {e['id'] for e in packet['edges']} | {s['id'] for s in packet['sources']} | {p['id'] for p in packet['live_candidates']} | {t['id'] for t in packet['live_studies']} | {c['id'] for c in packet['community_candidates']}
+            allowed = citable_ids(packet)
             try:
                 if configuration()['provider'] == 'codex_snapshot':
                     from atlas.codex_snapshot import load_review
-                    if role != 'maria' or language != 'en':
-                        raise ValueError('Committed review is scoped to Maria in English')
+                    if role != 'patient' or language != 'en':
+                        raise ValueError('Committed review is scoped to the patient audience in English')
                     review = load_review(packet)
                     report['mode'] = 'codex_snapshot_review'
                     report['agent_review'] = review
@@ -189,7 +195,7 @@ def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, rol
                 progress('extract')
                 draft = validate_model_review(model_call(packet, reader['instruction'] + '\nSummarize the supplied publication abstracts: research question, what was studied, reported results and their limits. In findings, include cited paper summaries and explicit risk warnings: weak or conflicting evidence, inappropriate generalization, differences between preclinical and human evidence, and any safety concerns actually reported in the packet. Do not invent hazards. In actions, assess feasibility of possible research or collaboration steps using only documented resources; explain prerequisites, missing evidence and why a step may not be feasible. Every finding and action must cite supplied IDs. If papers or feasibility evidence are absent, say so explicitly. The summary should explain the practical meaning for the selected reader, not list technical mechanisms.'), allowed)
                 progress('critic')
-                review = validate_model_review(model_call(packet, reader['instruction'] + '\nCritically review the draft against original records. Return a cited paper summary, feasibility analysis and risk warnings using the existing schema. Findings must explain what papers actually report and distinguish documented risks from uncertainties. Actions must describe feasible next steps, their dependencies and limitations, not promise efficacy or clinical suitability. Remove unsupported claims, challenge mechanistic equivalence, identify counterevidence and missing validation. Keep all relevant caveats and citations. For Maria, explain terms immediately in everyday language, keep sentences short and make practical meaning clear without assuming scientific training. Check that every reader-facing field follows the selected language.', draft), allowed)
+                review = validate_model_review(model_call(packet, reader['instruction'] + '\nCritically review the draft against original records. Return a cited paper summary, feasibility analysis and risk warnings using the existing schema. Findings must explain what papers actually report and distinguish documented risks from uncertainties. Actions must describe feasible next steps, their dependencies and limitations, not promise efficacy or clinical suitability. Remove unsupported claims, challenge mechanistic equivalence, identify counterevidence and missing validation. Keep all relevant caveats and citations. For the Patient & family audience, explain terms immediately in everyday language, keep sentences short and make practical meaning clear without assuming scientific training. Check that every reader-facing field follows the selected language.', draft), allowed)
                 report['mode'] = {'openai': 'openai_review', 'gemini': 'gemini_review'}.get(configuration()['provider'], 'external_agent_review')
                 report['agent_review'] = review
                 report['agent_provider'] = configuration()['provider']
@@ -209,7 +215,7 @@ def analyze(graph, live=None, use_openai=False, progress=lambda stage: None, rol
 def proposal_markdown(report, graph):
     edges = {e['id']: e for e in graph['edges']}
     sources = {s['id']: s for s in graph['sources']}
-    lines = ['# Research collaboration draft', '', 'Prepared for ' + report.get('audience', 'Maria') + ' · ' + report['label'], '', report['summary'], '',
+    lines = ['# Research collaboration draft', '', 'Prepared for ' + report.get('audience', 'Patient & family') + ' · ' + report['label'], '', report['summary'], '',
              'This is a research discussion draft. Biological compatibility, consent, access, and study eligibility remain to be checked.', '']
     review = report.get('agent_review')
     if review:

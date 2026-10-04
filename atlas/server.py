@@ -20,6 +20,7 @@ from atlas.integrations import configuration, brightdata_page
 from atlas.audiences import audience
 from atlas.leads import ranked_leads
 from atlas.communities import DIRECTORY
+from atlas.chat import ChatFailed, ChatUnavailable, chat_available, chat_reply
 
 ROOT = Path(__file__).resolve().parents[1]
 FOCUS = 'MONDO:0012812'
@@ -64,8 +65,12 @@ class Application:
         self.store.save_graph_view(view)
         return self.graph({**data, 'graph_id': view['id']})
 
+    def chat(self, data):
+        # Same graph parameters as /api/analysis, so the chat sees exactly the map on screen.
+        return chat_reply(self.graph(data), data.get('messages'), data.get('role', 'patient'), data.get('language', 'en'))
+
     def start_job(self, data):
-        role = data.get('role', 'maria')
+        role = data.get('role', 'patient')
         language = data.get('language', 'en')
         audience(role, language)
         for key in ('use_live', 'use_openai', 'use_agent', 'use_brightdata'):
@@ -133,7 +138,7 @@ def make_handler(app):
             try:
                 path = parsed.path
                 if path == '/api/health':
-                    return self.send(200, {'status': 'ok', 'role': 'maria', 'openai_configured': bool(os.environ.get('OPENAI_API_KEY')), 'agent': configuration(), 'database': 'SQLite'})
+                    return self.send(200, {'status': 'ok', 'role': 'patient', 'openai_configured': bool(os.environ.get('OPENAI_API_KEY')), 'agent': configuration(), 'chat': chat_available(), 'database': 'SQLite'})
                 if path == '/api/coverage':
                     return self.send(200, coverage())
                 if path == '/api/graph':
@@ -164,11 +169,12 @@ def make_handler(app):
                     if len(parts) == 5 and parts[4] == 'proposal':
                         return self.send(200, report['export'], 'text/markdown; charset=utf-8', {'Content-Disposition': 'attachment; filename="research-proposal.md"'})
                     return self.send(200, report)
-                static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/styles.css': 'styles.css', '/favicon.svg': 'favicon.svg'}
+                static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/styles.css': 'styles.css', '/world-map.js': 'world-map.js', '/home-world.js': 'home-world.js', '/glass-select.js': 'glass-select.js', '/intro.js': 'intro.js', '/favicon.svg': 'favicon.svg', '/apple-touch-icon.png': 'apple-touch-icon.png'}
                 static.update({'/lead-images/' + c['id'].replace(':', '-') + '.png': 'lead-images/' + c['id'].replace(':', '-') + '.png' for c in DIRECTORY})
                 if path in static:
                     file = ROOT / 'web' / static[path]
-                    return self.send(200, file.read_bytes(), (mimetypes.guess_type(str(file))[0] or 'application/octet-stream') + '; charset=utf-8')
+                    mime = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
+                    return self.send(200, file.read_bytes(), mime + '; charset=utf-8' if mime.startswith(('text/', 'application/javascript', 'image/svg')) else mime)
                 return self.send(404, {'error': 'Not found'})
             except ValueError as exc:
                 return self.send(400, {'error': str(exc)})
@@ -181,13 +187,21 @@ def make_handler(app):
                 return self.send(403, {'error': 'Cross-origin requests are not allowed'})
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                if not 0 < length <= 16384:
-                    return self.send(413, {'error': 'Request body must be 1–16384 bytes'})
+                limit = 65536 if self.path == '/api/chat' else 16384   # a conversation needs more room than a query
+                if not 0 < length <= limit:
+                    return self.send(413, {'error': 'Request body must be 1–%d bytes' % limit})
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError('Expected a JSON object')
                 if self.path == '/api/analysis':
                     return self.send(202, app.start_job(data))
+                if self.path == '/api/chat':
+                    try:
+                        return self.send(200, app.chat(data))
+                    except ChatUnavailable as exc:
+                        return self.send(503, {'error': str(exc), 'unavailable': True})
+                    except ChatFailed as exc:
+                        return self.send(502, {'error': str(exc)})
                 if self.path == '/api/live-graph':
                     return self.send(200, app.live_graph(data))
                 if self.path == '/api/live-search':
@@ -221,7 +235,7 @@ def main():
     args = parser.parse_args()
     app = Application(args.db)
     server = ThreadingHTTPServer((args.host, args.port), make_handler(app))
-    print('Raraction is ready at http://' + args.host + ':' + str(args.port), flush=True)
+    print('Asterisk is ready at http://' + args.host + ':' + str(args.port), flush=True)
     print('Maria demo · SQLite · ' + ('OpenAI configured' if os.environ.get('OPENAI_API_KEY') else 'evidence checks; OpenAI not configured'), flush=True)
     try:
         server.serve_forever()

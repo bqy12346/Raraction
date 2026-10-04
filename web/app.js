@@ -43,7 +43,7 @@ function displayGraph(graph) {
     $('#progress').textContent = ''; $('#progress').classList.remove('error');
     graphViewport={x:0,y:0,w:800,h:680};applyViewport();
     $('#cluster-list').querySelectorAll('[data-cluster]').forEach(input=>input.addEventListener('change',()=>{state.positions={};drawGraph();}));
-    drawGraph(); renderDetails(); renderPapers(); renderActions(); loadLeads();
+    drawGraph(); renderDetails(); renderPapers(); renderActions(); loadLeads(); syncChatToGraph();
     const note=$('.scope-note');
     if(graph.graph_id)note.innerHTML='<span class="status-dot"></span><div>Live research graph<small>'+esc(graph.live.query)+'<br>Retrieved '+esc(graph.live.retrieved_at.slice(0,10))+'</small></div>';
 }
@@ -425,7 +425,16 @@ async function runReview() {
 async function showCoverage() {
   try{
     const c=state.graph?.coverage||await api('/api/coverage');
-    $('#coverage-content').innerHTML=`<p>${esc(c.scope)}</p>`+c.sources.map(s=>`<article class="source-card"><h3>${esc(s.name)} ${badge(s.status)}</h3><p>${esc(s.use)}</p></article>`).join('')+`<h3>Known gaps</h3><ul>${c.gaps.map(g=>`<li>${esc(g)}</li>`).join('')}</ul><h3>The 10× planning hypothesis</h3><p>${esc(c.moonshot.milestone)}</p><p>${c.moonshot.baseline_days} days → ${c.moonshot.proposed_days} days. ${esc(c.moonshot.status)}</p><ul>${c.moonshot.assumptions.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p>${esc(c.moonshot.validation)}</p><p>${state.graph?.excluded.length||0} graph edges excluded by current filters.</p>`;
+    // Every label, number and sentence sits in its own element so i18n.js can translate each text node whole.
+    const tone=status=>/unavailable/.test(status)?'warn':/next/.test(status)?'planned':/live/.test(status)?'live':'curated';
+    const m=c.moonshot, stat=(label,days,cls)=>`<div class="stat ${cls}"><span class="stat-label">${label}</span><span class="stat-value"><b>${days}</b><span>days</span></span></div>`;
+    $('#coverage-content').innerHTML=`<p class="coverage-scope">${esc(c.scope)}</p>`+
+      `<section class="coverage-section"><h3>Data sources</h3><div class="source-grid">`+c.sources.map(s=>`<article class="source-tile ${tone(s.status)}"><div class="source-head"><strong>${esc(s.name)}</strong><span class="source-status"><i aria-hidden="true"></i><span>${esc(pretty(s.status))}</span></span></div><p>${esc(s.use)}</p></article>`).join('')+`</div></section>`+
+      `<section class="coverage-section"><h3>Known gaps</h3><ul class="gap-list">${c.gaps.map(g=>`<li>${esc(g)}</li>`).join('')}</ul></section>`+
+      `<section class="coverage-section moonshot"><h3>The 10× planning hypothesis</h3><p class="moonshot-goal">${esc(m.milestone)}</p>`+
+      `<div class="moonshot-stats">${stat('Baseline',m.baseline_days,'')}<span class="stat-arrow" aria-hidden="true">→</span>${stat('Proposed',m.proposed_days,'target')}<span class="stat-factor">${m.factor}×</span></div>`+
+      `<p class="moonshot-status">${esc(m.status)}</p><h4>Assumptions</h4><ul class="check-list">${m.assumptions.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h4>How to validate</h4><p>${esc(m.validation)}</p></section>`+
+      `<p class="coverage-foot"><span>${state.graph?.excluded.length||0} graph edges excluded by current filters.</span><span>Reviewed ${esc(c.reviewed_at)}</span></p>`;
     $('#coverage-dialog').showModal();
   }catch(error){showError(error);}
 }
@@ -441,9 +450,29 @@ $('#review').addEventListener('click',runReview);
 document.querySelectorAll('[data-detail]').forEach(b=>b.addEventListener('click',()=>{state.detail=b.dataset.detail;renderDetails();}));
 $('#coverage-open').addEventListener('click',showCoverage);
 $('#coverage-close').addEventListener('click',()=>$('#coverage-dialog').close());
+// Home: a single search box. A search (or the example map) opens the full workspace as the detail view.
+// The query lives in the address (#q=...), so Back returns home and a shared link opens the detail directly.
+function showHome(){document.body.classList.add('is-home');$('#home-search').value='';$('#home-search').focus();}
+function openDetail(query){
+  document.body.classList.remove('is-home');window.scrollTo(0,0);
+  if(query)search(query);
+}
+function goSearch(query){
+  query=(query||'').trim();if(!query)return $('#home-search').focus();
+  history.pushState({q:query},'','#q='+encodeURIComponent(query));openDetail(query);
+}
+const hashQuery=()=>{const m=/^#q=(.*)$/.exec(location.hash);return m?decodeURIComponent(m[1]):null;};
+$('#home-form').addEventListener('submit',e=>{e.preventDefault();goSearch($('#home-search').value);});
+document.querySelectorAll('.home-q').forEach(b=>b.addEventListener('click',()=>goSearch(b.dataset.query)));
+$('#home-example').addEventListener('click',()=>{history.pushState({example:true},'','#example');openDetail(null);});
+$('#brand-home').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname);showHome();});
+window.addEventListener('popstate',()=>{const q=hashQuery();if(q)openDetail(q);else if(location.hash==='#example')openDetail(null);else showHome();});
 async function init(){
-  try{state.health=await api('/api/health');const configured=state.health.agent?.configured;$('#use-openai').disabled=!configured;$('#use-openai').checked=configured;$('#agent-status').textContent=configured?'('+state.health.agent.provider+' available)':'(not configured)';}catch(error){showError(error);}
-  await loadGraph('MONDO:0012812');
+  try{state.health=await api('/api/health');updateChatAvailability();const configured=state.health.agent?.configured;$('#use-openai').disabled=!configured;$('#use-openai').checked=configured;$('#agent-status').textContent=configured?'('+state.health.agent.provider+' available)':'(not configured)';}catch(error){showError(error);}
+  const q=hashQuery();
+  if(q)document.body.classList.remove('is-home');else if(location.hash==='#example')openDetail(null);else showHome();
+  await loadGraph('MONDO:0012812');   // the starter map loads first, so a live search always replaces it rather than racing it
+  if(q)openDetail(q);
 }
 init();
 
@@ -499,14 +528,90 @@ function leadCriteria(n){
 function researchTile(n,i,key){
   const initials=n.label.split(/\s+/).slice(0,2).map(x=>x[0]).join('');
   const email=n.email&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(n.email)?`<a href="mailto:${esc(encodeURIComponent(n.email))}">${esc(n.email)}</a>`:'';
-  return `<article class="research-tile ${i===0?'featured':''}"><div class="research-art"><span class="research-monogram" aria-hidden="true">${esc(initials)}</span><span class="image-unavailable">${n.kind==='researcher'?'Photo unavailable':'Logo unavailable'}</span>${n.image?`<img src="${esc(n.image)}" alt="${esc(n.label)}" loading="lazy">`:''}</div><button class="research-tile-toggle" type="button" aria-expanded="false" aria-controls="${key}-info-${i}"><strong>${esc(n.label)}</strong></button><div class="research-hover" id="${key}-info-${i}"><div class="research-hover-content">${leadDescription(n)}${n.affiliation?`<p>${esc(n.affiliation)}</p>`:''}${leadCriteria(n)}<div class="lead-links">${n.website?link(n.website,'Website / source record'):''}${n.contact_url?link(n.contact_url,'Contact page / study contact'):''}${email}${n.phone?`<span>Phone: ${esc(n.phone)}</span>`:''}</div><details><summary>Sources & connection</summary>${n.citations.map(c=>`<p>${link(c.url,c.name)}</p>`).join('')}<button class="text-button" data-inspect-lead="${esc(n.id)}">View in graph</button></details></div></div></article>`;
+  return `<article class="research-tile ${i===0?'featured':''}"><div class="research-art"><span class="research-monogram" aria-hidden="true">${esc(initials)}</span><span class="image-unavailable">${n.kind==='researcher'?'Photo unavailable':'Logo unavailable'}</span>${n.image?`<img src="${esc(n.image)}" alt="${esc(n.label)}" loading="lazy">`:''}</div><button class="research-tile-toggle" type="button" aria-expanded="false" aria-controls="${key}-info-${i}"><strong>${esc(n.label)}</strong></button><div class="research-hover" id="${key}-info-${i}"><div class="research-hover-content">${n.affiliation?`<p>${esc(n.affiliation)}</p>`:''}${leadCriteria(n)}<div class="lead-links">${n.website?link(n.website,'Website / source record'):''}${n.contact_url?link(n.contact_url,'Contact page / study contact'):''}${email}${n.phone?`<span>Phone: ${esc(n.phone)}</span>`:''}</div><details><summary>Sources & connection</summary>${n.citations.map(c=>`<p>${link(c.url,c.name)}</p>`).join('')}<button class="text-button" data-inspect-lead="${esc(n.id)}">View in graph</button></details></div></div></article>`;
 }
 function bindLeadInspection(container){
   container.querySelectorAll('[data-inspect-lead]').forEach(button=>button.addEventListener('click',()=>{if($('#research-dialog').open)$('#research-dialog').close();$('#graph-optional').open=true;$('#graph-science').checked=true;drawGraph();select('node',button.dataset.inspectLead);$('#graph-optional').scrollIntoView({behavior:'smooth'});}));
   container.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;}));
 }
 $('#research-close').addEventListener('click',()=>$('#research-dialog').close());
+// Scroll to the AI guide without touching the URL hash (the hash carries the search query; popstate would go home).
+$('#ai-jump-icon').addEventListener('click',()=>{const guide=$('#ai-guide');guide.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});guide.focus({preventScroll:true});});
 for(const id of ['communities','research','indirect','no-contact','criteria'])$('#show-'+id).addEventListener('change',renderLeads);
 $('#expand-graph').addEventListener('click',()=>{const panel=$('#graph-optional'),expanded=panel.classList.toggle('expanded');$('#expand-graph').setAttribute('aria-pressed',String(expanded));$('#expand-graph').textContent=expanded?'Restore workspace size':'Enlarge graph workspace';});
 $('#graph-science').addEventListener('change',()=>{state.positions={};drawGraph();});
-$('#audience-role').addEventListener('change',()=>{$('#graph-optional').open=$('#audience-role').value!=='maria';});
+// Experts start with the graph open; patients and families start with people and the AI guide.
+$('#audience-role').addEventListener('change',()=>{$('#graph-optional').open=$('#audience-role').value==='expert';});
+
+// ---- Ask-your-own-question chat (POST /api/chat). Grounded in the map on screen; citations are server-checked. ----
+const chat={messages:[],key:null,pending:false};
+const chatMark=()=>$('.chat-mark').innerHTML;
+function chatKey(){return state.graph?(state.graph.graph_id||state.graph.focus):null;}
+function syncChatToGraph(){ if(chatKey()!==chat.key){chat.key=chatKey();chat.messages=[];renderChat();} }
+function updateChatAvailability(){
+  const available=!!state.health?.chat;
+  $('#ai-chat').classList.toggle('unavailable',!available);
+  $('#chat-input').disabled=!available;$('#chat-send').disabled=!available;
+  $('#chat-suggestions').querySelectorAll('.chat-chip').forEach(b=>{b.disabled=!available;});
+  $('#chat-note').textContent=available?'Not medical advice. For decisions about your care, talk to your care team.':'The AI assistant is not available on this server yet (no AI provider is configured).';
+}
+// Edges read as "A → B" so two edges with the same relation stay distinguishable.
+function chatSource(c){
+  const edge=state.graph.edges.find(e=>e.id===c.id);
+  if(edge){const name=id=>state.graph.nodes.find(n=>n.id===id)?.label||id;return `<button class="text-button" data-select-edge="${esc(edge.id)}">${esc(shorten(name(edge.subject)+' → '+name(edge.object),60))}</button>`;}
+  return state.graph.sources.some(s=>s.id===c.id)?citation(c.id):link(c.url,c.name);
+}
+function chatParagraphs(text){return text.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');}
+function renderChat(){
+  const log=$('#chat-log');
+  log.innerHTML=chat.messages.map(m=>{
+    if(m.role==='user')return `<div class="chat-msg user"><div class="chat-bubble"><div class="chat-text">${chatParagraphs(m.content)}</div></div></div>`;
+    if(m.role==='notice')return `<div class="chat-msg notice"><p>${esc(m.content)}</p></div>`;
+    const sources=(m.citations||[]).map(chatSource).join('');
+    return `<div class="chat-msg assistant"><span class="chat-avatar" aria-hidden="true">${chatMark()}</span><div class="chat-bubble"><div class="chat-text">${chatParagraphs(m.content)}</div>${sources?`<div class="chat-sources"><span class="chat-sources-label">Sources</span>${sources}</div>`:''}</div></div>`;
+  }).join('')+(chat.pending?`<div class="chat-msg assistant"><span class="chat-avatar" aria-hidden="true">${chatMark()}</span><div class="chat-bubble chat-typing" aria-label="…"><i></i><i></i><i></i></div></div>`:'');
+  log.hidden=!chat.messages.length&&!chat.pending;
+  $('#chat-reset').hidden=!chat.messages.length;
+  log.querySelectorAll('[data-select-edge]').forEach(b=>b.addEventListener('click',()=>{$('#graph-optional').open=true;select('edge',b.dataset.selectEdge);$('#graph-optional').scrollIntoView({behavior:'smooth'});}));
+  log.scrollTop=log.scrollHeight;
+}
+function setChatSuggestions(questions){
+  if(!questions.length)return;
+  $('#chat-suggestions').innerHTML=questions.map(q=>`<button type="button" class="chat-chip">${esc(q)}</button>`).join('');
+}
+async function sendChat(text){
+  text=text.trim();
+  if(!text||chat.pending||!state.graph)return;
+  syncChatToGraph();
+  chat.messages.push({role:'user',content:text});chat.pending=true;renderChat();
+  $('#chat-input').value='';autosizeChat();
+  const history=chat.messages.filter(m=>m.role==='user'||m.role==='assistant').slice(-12).map(({role,content})=>({role,content}));
+  const key=chat.key;
+  try{
+    const reply=await api('/api/chat',{...options(),messages:history,role:$('#audience-role').value,language:$('#language').value});
+    if(key!==chat.key)return;   // the map changed while waiting; this answer belongs to the old one
+    chat.messages.push({role:'assistant',content:reply.answer,citations:reply.citations});
+    setChatSuggestions(reply.follow_up_questions||[]);
+  }catch(error){ if(key===chat.key)chat.messages.push({role:'notice',content:error.message}); }
+  finally{ if(key===chat.key){chat.pending=false;renderChat();} else chat.pending=false; }
+}
+function autosizeChat(){const t=$('#chat-input');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,160)+'px';}
+$('#chat-form').addEventListener('submit',e=>{e.preventDefault();sendChat($('#chat-input').value);});
+$('#chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat($('#chat-input').value);}});
+$('#chat-input').addEventListener('input',autosizeChat);
+$('#chat-suggestions').addEventListener('click',e=>{const chip=e.target.closest('.chat-chip');if(chip&&!chip.disabled)sendChat(chip.textContent);});
+$('#chat-reset').addEventListener('click',()=>{chat.messages=[];renderChat();$('#chat-input').focus();});
+renderChat();
+
+// ---- Graph legend: a glass capsule floating on the graph by default; expands into the full sidebar. ----
+(function(){
+  const workspace=$('#workspace'), toggle=$('#legend-toggle');
+  function setLegend(expanded,remember){
+    workspace.classList.toggle('legend-collapsed',!expanded);
+    toggle.setAttribute('aria-expanded',String(expanded));
+    if(remember){try{localStorage.setItem('asterisk-legend',expanded?'expanded':'collapsed');}catch{}}
+  }
+  let saved=null;try{saved=localStorage.getItem('asterisk-legend');}catch{}
+  setLegend(saved==='expanded',false);
+  toggle.addEventListener('click',()=>setLegend(workspace.classList.contains('legend-collapsed'),true));
+})();
