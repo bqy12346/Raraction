@@ -342,8 +342,7 @@ dialog .dialog-top .quiet:hover{transform:scale(1.08) rotate(90deg)}
 .research-gallery{grid-template-columns:repeat(auto-fit,calc((100% - 32px)/3.35));justify-content:center}
 @media(max-width:700px){.research-gallery{grid-template-columns:repeat(auto-fit,calc((100% - 12px)/2))}.research-tile.featured{grid-column:auto}}
 .research-tile-toggle{justify-content:center;text-align:center}
-/* People hub heading: OpenAI mark that jumps to the AI guide. */
-.hub-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+/* OpenAI mark beside the search suggestions that jumps to the AI guide. */
 .ai-jump-icon{--spring:cubic-bezier(.34,1.56,.64,1);flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--ink);cursor:pointer;
   background:var(--glass-fill-strong);border:1px solid var(--glass-rim);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-lift);transition:transform .45s var(--spring),box-shadow .3s ease,color .2s}
 .ai-jump-icon svg{width:22px;height:22px;fill:currentColor;transition:transform .6s var(--spring)}
@@ -494,3 +493,4 @@ body.searching #search-form button[type=submit]{cursor:progress}
 @media(max-width:700px){.ai-review-panel .ai-chat{padding:16px 14px}.composer-bar{align-items:flex-end}.chat-tool{font-size:12px;padding:6px 10px}}
 @media(prefers-reduced-motion:reduce){.chat-tool{transition:none}.chat-tool:hover,.chat-tool:active{transform:none}}
 .graph-optional+.people-hub{margin-top:20px}
+.search-meta{align-items:center}.search-try{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.search-try .ai-jump-icon{width:36px;height:36px}.search-try .ai-jump-icon svg{width:18px;height:18px}
