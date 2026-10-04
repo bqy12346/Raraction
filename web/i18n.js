@@ -246,10 +246,10 @@
   let language;
   try { language = localStorage.getItem('raraction-language'); } catch {}
   const browser = navigator.language;
-  if (!['en','zh-CN','zh-Hant','de'].includes(language)) language = /^zh-(TW|HK|MO|Hant)/i.test(browser) ? 'zh-Hant' : browser.startsWith('zh') ? 'zh-CN' : browser.startsWith('de') ? 'de' : 'en';
+  if (!['en','zh-CN','zh-Hant','de','fr'].includes(language)) language = /^zh-(TW|HK|MO|Hant)/i.test(browser) ? 'zh-Hant' : browser.startsWith('zh') ? 'zh-CN' : browser.startsWith('de') ? 'de' : browser.startsWith('fr') ? 'fr' : 'en';
   const select = document.createElement('select');
-  select.id = 'language'; select.setAttribute('aria-label', 'Language / 语言 / 語言 / Sprache');
-  select.innerHTML = '<option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-Hant">繁體中文</option><option value="de">Deutsch</option>';
+  select.id = 'language'; select.setAttribute('aria-label', 'Language / 语言 / 語言 / Sprache / Langue');
+  select.innerHTML = '<option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-Hant">繁體中文</option><option value="de">Deutsch</option><option value="fr">Français</option>';
   document.querySelector('.header-right').prepend(select);
   // Helpers for templated detail-panel text: look terms up in the dictionary, keep unknown ones verbatim.
   const lookup = value => locales[language].dict[value] || locales[language].dict[value.toLowerCase()];
@@ -257,7 +257,7 @@
   const trialStatus = {'recruiting':'招募中', 'not yet recruiting':'尚未开始招募', 'active not recruiting':'进行中（已停止招募）', 'completed':'已完成',
     'enrolling by invitation':'受邀入组', 'suspended':'已暂停', 'terminated':'已终止', 'withdrawn':'已撤回', 'unknown':'状态未知'};
   const studyStatus = value => locales[language].trialStatus[value.toLowerCase().replace(/_/g, ' ')] || value;
-  // Simplified Chinese lives in this file; other languages (i18n-zh-hant.js, i18n-de.js) register {title, dict, trialStatus, rules} on window.asteriskLocales.
+  // Simplified Chinese lives in this file; other languages (i18n-zh-hant.js, i18n-de.js, i18n-fr.js) register {title, dict, trialStatus, rules} on window.asteriskLocales.
   const locales = {'zh-CN': {title: 'Asterisk · 罕见病知识图谱', dict: zh, trialStatus}, ...window.asteriskLocales};
   function translate(text) {
     const trimmed = text.trim();

@@ -193,7 +193,7 @@ def make_handler(app):
                     if len(parts) == 5 and parts[4] == 'proposal':
                         return self.send(200, report['export'], 'text/markdown; charset=utf-8', {'Content-Disposition': 'attachment; filename="research-proposal.md"'})
                     return self.send(200, report)
-                static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/i18n-zh-hant.js': 'i18n-zh-hant.js', '/i18n-de.js': 'i18n-de.js', '/styles.css': 'styles.css', '/world-map.js': 'world-map.js', '/home-world.js': 'home-world.js', '/glass-select.js': 'glass-select.js', '/intro.js': 'intro.js', '/favicon.svg': 'favicon.svg', '/apple-touch-icon.png': 'apple-touch-icon.png'}
+                static = {'/': 'index.html', '/app.js': 'app.js', '/i18n.js': 'i18n.js', '/i18n-zh-hant.js': 'i18n-zh-hant.js', '/i18n-de.js': 'i18n-de.js', '/i18n-fr.js': 'i18n-fr.js', '/styles.css': 'styles.css', '/world-map.js': 'world-map.js', '/home-world.js': 'home-world.js', '/glass-select.js': 'glass-select.js', '/intro.js': 'intro.js', '/favicon.svg': 'favicon.svg', '/apple-touch-icon.png': 'apple-touch-icon.png'}
                 static.update({'/lead-images/' + c['id'].replace(':', '-') + '.png': 'lead-images/' + c['id'].replace(':', '-') + '.png' for c in DIRECTORY})
                 static.update({'/lead-images/' + f: 'lead-images/' + f for f in PEOPLE_FILES})
                 if path in static:

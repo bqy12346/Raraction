@@ -217,6 +217,7 @@ PROPOSAL_HEADINGS = {
     'zh-CN': {'review': '面向所选角色的 AI 审阅', 'findings': '研究发现', 'actions': '建议下一步', 'missing': '仍缺少的证据'},
     'zh-Hant': {'review': '針對所選身份的 AI 審閱', 'findings': '研究發現', 'actions': '建議下一步', 'missing': '仍缺少的證據'},
     'de': {'review': 'KI-Prüfung für die ausgewählte Zielgruppe', 'findings': 'Ergebnisse', 'actions': 'Empfohlene nächste Schritte', 'missing': 'Fehlende Evidenz'},
+    'fr': {'review': 'Analyse IA pour le public choisi', 'findings': 'Constats', 'actions': 'Prochaines étapes suggérées', 'missing': 'Preuves manquantes'},
 }
 
 

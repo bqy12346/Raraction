@@ -161,6 +161,17 @@ class EvidenceTests(unittest.TestCase):
         self.assertIn('## 針對所選身份的 AI 審閱', exported)
         self.assertIn('### 仍缺少的證據', exported)
 
+    def test_french_review_language_and_export_headings(self):
+        review = {'summary': 'Analyse adaptée', 'findings': [], 'actions': [], 'missing_evidence': ['Preuves fonctionnelles']}
+        graph = self.graph()
+        with patch.dict(os.environ, {'ATLAS_AGENT_PROVIDER': 'openai', 'OPENAI_API_KEY': 'test'}), patch('atlas.agent.model_call', return_value=review) as call:
+            report = analyze(graph, use_openai=True, role='expert', language='fr')
+        for invocation in call.call_args_list:
+            self.assertIn('French', invocation.args[1])
+        exported = proposal_markdown(report, graph)
+        self.assertIn('## Analyse IA pour le public choisi', exported)
+        self.assertIn('### Preuves manquantes', exported)
+
     def test_unknown_audience_and_language_are_rejected(self):
         for args in ({'role': 'unknown'}, {'language': 'unknown'}, {'role': []}):
             with self.assertRaises(ValueError):
