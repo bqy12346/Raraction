@@ -17,6 +17,7 @@
 | [03-changes.md](03-changes.md) | 改动清单：新增和修改了哪些文件，每一步产出什么，怎么运行 |
 | [04-issues-and-fixes.md](04-issues-and-fixes.md) | 过程中发现的问题和修正，大多是"看起来对、其实错"的情况 |
 | [05-next-steps.md](05-next-steps.md) | 还没做的事、风险，以及运行 OpenAI 步骤的方法 |
+| [06-ui-merge.md](06-ui-merge.md) | 把 journey 页面并入 cluster view、作为唯一界面的思路和改动 |
 
 ## 当前状态
 
@@ -24,6 +25,6 @@
 |---|---|
 | 数据：ClinVar、ClinicalTrials.gov、PubMed、NIH RePORTER、患者组织 | 已完成，并已运行 |
 | 合并分析：机制、线索判定、网络重叠、缺口 | 已完成，并已运行 |
-| 界面 [views/journey.html](../../views/journey.html) | 已完成，用无头 Chrome 截图检查过首页和线索详情页 |
+| 界面 [views/atlas_cluster_view.html](../../views/atlas_cluster_view.html) | 已完成：journey 功能已并入 cluster view，成为唯一界面；用无头 Chrome 截图检查过四种状态，没有控制台错误 |
 | OpenAI Extract（读论文抽机制）和 Explain（通俗解释、提案） | 代码已写，**未运行**（缺 API Key） |
 | 10× 时间线、演示视频脚本 | 未开始 |

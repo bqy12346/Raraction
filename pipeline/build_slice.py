@@ -2,7 +2,7 @@
 
 Outputs in data/slice/:
   nodes.tsv, edges.tsv   the merged graph, same columns as data/atlas, one source per edge
-  slice_view.json        what the journey view needs: search index, per-disease leads, bridges, gaps, evidence for every edge shown
+  slice_view.json        what the interface needs for the journey: search index, per-disease leads, bridges, gaps, evidence for every edge shown
 
 Everything here is deterministic graph work; the model only phrases it afterwards (explain.py).
   - Mechanism per gene and disease: extracted paper claims first, then Orphanet, then the ClinVar variant spectrum.
@@ -205,7 +205,11 @@ def vias(eids):
 
 
 GENERIC = set("university universit department dept hospital medical medicine center centre institute institut school college research clinical "
-              "national children childrens health sciences science faculty division laboratory foundation general unit program the and for of".split())
+              "national children childrens health sciences science faculty division laboratory foundation general unit program the and for of "
+              # fields and countries say little about whether two records are the same person
+              "neuroscience neurosciences neurology neurological genetics genetic genomics genome molecular biology epilepsy pediatrics paediatrics "
+              "pediatric paediatric psychiatry group kingdom united states america germany france italy denmark danish netherlands canada australia "
+              "china japan spain sweden belgium switzerland england child from with".split())
 
 
 def places(eids):
@@ -218,10 +222,14 @@ def places(eids):
     return out
 
 
+def shared_places(by_gene):
+    ps = [places(v) for v in by_gene.values()]
+    return sorted(set().union(*(ps[i] & ps[j] for i in range(len(ps)) for j in range(i + 1, len(ps)))))
+
+
 def same_person(by_gene):
     """Names alone can merge two people; keep a researcher bridge only when two gene links share an institution word."""
-    ps = [places(v) for v in by_gene.values()]
-    return any(ps[i] & ps[j] for i in range(len(ps)) for j in range(i + 1, len(ps)))
+    return bool(shared_places(by_gene))
 
 
 bridges = []
@@ -230,7 +238,7 @@ for n, by_gene in touch.items():
     if len(by_gene) >= 2 and len(set().union(*(vias(v) for v in by_gene.values()))) >= 2 and (nodes[n]["type"] != "researcher" or same_person(by_gene)):
         t = nodes[n]["type"]
         bridges.append({"node": n, "type": t, "genes": sorted(by_gene, key=lambda h: genes[h]["symbol"]), "edges": {genes[h]["symbol"]: v for h, v in by_gene.items()},
-                        "identity_unverified": t == "researcher", "shared_institution": sorted(set.intersection(*[places(v) for v in by_gene.values()]))[:4] if t == "researcher" else []})
+                        "identity_unverified": t == "researcher", "shared_institution": shared_places(by_gene)[:4] if t == "researcher" else []})
 bridges.sort(key=lambda b: (-len(b["genes"]), b["type"], name(b["node"])))
 
 # ---------------------------------------------------------------- leads: neighbours of each disease, judged

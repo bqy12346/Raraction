@@ -25,7 +25,7 @@
 | 6 | [extract_claims.py](../../pipeline/extract_claims.py) | **OpenAI**：从摘要抽取机制论断和资产，逐字校验引用，标出相互矛盾的论断 | `parts/extract_*`（未运行） |
 | 7 | [build_slice.py](../../pipeline/build_slice.py) | 合并所有来源；机制、社区、桥梁、线索、反例、缺口 | `nodes.tsv`、`edges.tsv`、`slice_view.json` |
 | 8 | [explain.py](../../pipeline/explain.py) | **OpenAI**：给每条线索写解释和提案，给每个缺口写下一步问题，校验引用的边编号 | `explanations.json`（未运行） |
-| 9 | [build_view.py](../../pipeline/build_view.py) | 把数据嵌进界面模板，生成单个 HTML 文件 | `views/journey.html` |
+| 9 | [build_view.py](../../pipeline/build_view.py) | 把图谱数据、切片数据和症状索引嵌进界面模板，生成单个 HTML 文件 | `views/atlas_cluster_view.html` |
 
 运行方法：
 
@@ -61,23 +61,23 @@ python3 pipeline/build_slice.py && python3 pipeline/build_view.py
 |---|---|
 | 节点 | 2,788：疾病 42、基因 12、症状 569、通路 37、变异 1,263、研究 23、组织 90、研究者 440、论文 230、资助项目 54、资助方 14、干预 12、机制 2 |
 | 边 | 4,509：observed 4,448，inferred 61 |
-| 桥梁 | 研究者 11、组织 2、研究 3、资助方 3 |
+| 桥梁 | 研究者 10、组织 2、研究 3、资助方 3 |
 
 ## 新增：界面
 
 | 文件 | 内容 |
 |---|---|
-| [views/src/journey.template.html](../../views/src/journey.template.html) | 界面模板，`__DATA__` 是数据占位符 |
-| [views/journey.html](../../views/journey.html) | 生成好的单文件页面（0.81 MB），直接在浏览器打开 |
+| [views/src/atlas.template.html](../../views/src/atlas.template.html) | 界面模板，`__ATLAS__`、`__SLICE__`、`__SYMPTOMS__` 是数据占位符 |
+| [views/atlas_cluster_view.html](../../views/atlas_cluster_view.html) | 生成好的单文件页面（4.07 MB），直接在浏览器打开。最初写的独立 journey 页面已经并入这里并删除，见 [06-ui-merge.md](06-ui-merge.md) |
 
 主要功能：
 
-- 全局搜索：疾病、同义词、基因、症状、患者组织、通路、研究、药物
-- 四个角色视图：Maria、Devon、Priya、Dr. Osei
-- 邻居地图：按判定结果着色，虚线表示推断的关联
+- 全局搜索：疾病名、基因、症状覆盖全部 7,999 种疾病；同义词、患者组织、通路、研究、药物限于切片
+- 四个角色视图：Maria、Devon、Priya、Dr. Osei（左栏底部的 "Viewing as"）
+- 邻居地图：颜色代表机制聚类，切片内的邻居外圈按线索判定着色
 - 线索详情：证据链（每个箭头都可以点开）、两边的机制对比、判定理由、可复用的东西、下一步
 - 证据侧栏：来源链接、日期、证据类型、置信度、原文引用、矛盾证据
-- 网址锚点：例如 `journey.html#d=MONDO:0012812&lead=MONDO:0032900&p=maria`
+- 网址锚点：例如 `atlas_cluster_view.html#d=MONDO:0012812&lead=MONDO:0032900&p=maria`
 - 深色模式，窄屏时变为单栏
 
 ## 新增：文档

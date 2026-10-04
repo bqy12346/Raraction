@@ -18,12 +18,11 @@ For research use only, not medical advice.
 |---|---|
 | [data/atlas/](data/atlas/) | The database: nodes, edges, crosswalk tables, classification, neighbour pairs, and the build script |
 | [data/demo_graph/](data/demo_graph/) | A small ten-gene graph for trying things out |
-| [views/atlas_cluster_view.html](views/atlas_cluster_view.html) | Searchable cluster view; download and open in a browser |
+| [views/atlas_cluster_view.html](views/atlas_cluster_view.html) | **The user interface**: searchable cluster view of all 7,999 diseases, with the full journey for the STXBP1 slice; download and open in a browser |
 | [views/demo_graph.html](views/demo_graph.html) | Interactive view of the ten-gene graph |
 | [scripts/download_raw.sh](scripts/download_raw.sh) | Downloads the raw source files (about 1 GB, not committed) |
 | [data/README.md](data/README.md) | File-by-file reference: columns, keys, thresholds |
-| [views/journey.html](views/journey.html) | The journey view for the STXBP1 slice; download and open in a browser |
-| [pipeline/](pipeline/) | Scripts that build the slice, one per source, plus the merge, OpenAI and view steps |
+| [pipeline/](pipeline/) | Scripts that build the slice, one per source, plus the merge, OpenAI and view steps; `build_view.py` writes the interface from `views/src/atlas.template.html` |
 | [data/slice/](data/slice/) | The slice graph (`nodes.tsv`, `edges.tsv`), per-source parts, view data and cached model answers |
 | [docs/05.pdf](docs/05.pdf) | The challenge brief |
 
@@ -46,7 +45,7 @@ atlas (HPO, MONDO, Orphanet, Reactome, HGNC)
    ├─ extract_claims  OpenAI: mechanism claims and research assets read from abstracts (Extract + Reconcile)
    │  build_slice.py  merge; mechanism per gene-disease link; bridges; leads with verdicts; gaps
    ├─ explain         OpenAI: plain-language explanation, next step and draft message for each lead (Explain)
-   │  build_view.py   embed the view data into views/journey.html
+   │  build_view.py   embed atlas + slice data and a symptom index into views/atlas_cluster_view.html
 ```
 
 Every source writes `data/slice/parts/<source>_{nodes,edges}.tsv` in the atlas edge format (source, source id, url,
@@ -198,8 +197,8 @@ python3 data/demo_graph/build_demo_graph.py
 - **Coverage gaps.** 1,491 diseases have no pathway, 791 have no symptoms, and 3,640 have no neighbour passing
   both thresholds.
 - **332 diseases have no exact MONDO mapping** and may include duplicates.
-- **Search in the cluster view covers disease names and gene symbols only.** The journey view also searches synonyms,
-  symptoms, patient groups, pathways, studies and drugs, within the slice.
+- **Search covers disease names, genes and symptoms across the atlas**, but synonyms, patient groups, pathways,
+  studies and drugs only within the slice (MONDO synonyms are not in the committed atlas files).
 - **Slice: patient groups come from a hand-built seed list** (`data/slice/patient_orgs_seed.tsv`), checked against live
   pages but not exhaustive; NORD and Orphanet have no open API for their directories.
 - **Slice: researchers are matched by name and institution words**, which can still merge or split people.
