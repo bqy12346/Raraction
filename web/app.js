@@ -13,9 +13,10 @@ function link(url, text) {
   return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗</a>`;
 }
 function badge(status) { const cls = ['inferred','hypothesis','research_proposal'].includes(status) ? 'gold' : ['disputed','conflicting'].includes(status) ? 'rust' : ['unknown','unreviewed_candidate'].includes(status) ? 'muted' : ''; return `<span class="badge ${cls}">${esc(pretty(status))}</span>`; }
-async function api(url, body) {
-  const response = await fetch(url, body ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) } : {});
-  const data = await response.json();
+async function api(url, body, signal) {
+  const response = await fetch(url, { ...(body ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) } : {}), signal });
+  // Hosting platforms can answer with an HTML error page (e.g. a function timeout); report it readably.
+  const data = await response.json().catch(() => ({ error: 'The server returned an unexpected response (HTTP ' + response.status + ').' }));
   if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
   return data;
 }
@@ -31,6 +32,7 @@ async function loadGraph(focus) {
     displayGraph(graph);
   } catch (error) { showError(error); }
 }
+let starterNote=null;
 function displayGraph(graph) {
     const focus=graph.focus;
     const hiddenClusters=new Set(state.graph?.focus===focus?[...$('#cluster-list').querySelectorAll('[data-cluster]:not(:checked)')].map(input=>input.dataset.cluster):[]);
@@ -45,6 +47,8 @@ function displayGraph(graph) {
     $('#cluster-list').querySelectorAll('[data-cluster]').forEach(input=>input.addEventListener('change',()=>{state.positions={};drawGraph();}));
     drawGraph(); renderDetails(); renderPapers(); renderActions(); loadLeads(); syncChatToGraph();
     const note=$('.scope-note');
+    starterNote??=note.innerHTML;   // remember the example's own scope note so it can come back
+    if(!graph.graph_id)note.innerHTML=starterNote;
     if(graph.graph_id)note.innerHTML='<span class="status-dot"></span><div>Live research graph<small>'+esc(graph.live.query)+'<br>Retrieved '+esc(graph.live.retrieved_at.slice(0,10))+'</small></div>';
 }
 
@@ -371,16 +375,27 @@ function renderLive() {
     `<details><summary>Filtering log (${live.excluded.length} excluded records)</summary>${live.excluded.map(x=>`<p>${esc(x.id)} · ${esc(pretty(x.reason))}</p>`).join('')||'<p>No records excluded.</p>'}</details>`;
 }
 function setView(view) { state.view=view;$('#network-view').hidden=view!=='network';$('#papers-view').hidden=view!=='papers';$('#network-tab').classList.toggle('active',view==='network');$('#papers-tab').classList.toggle('active',view==='papers');$('#fit').hidden=view!=='network'; }
+// Status line under the results search bar; while loading, the old results are dimmed.
+function setSearchStatus(kind,text){
+  const el=$('#search-status');
+  document.body.classList.toggle('searching',kind==='loading');
+  el.hidden=!kind;el.className='search-status'+(kind?' '+kind:'');el.textContent=text||'';
+}
+let searchAbort=null;
 async function search(query) {
   state.query=query;$('#search').value=query;
   const serial=++state.request;
-  const button=$('#search-form button[type="submit"]');button.disabled=true;
+  // A new search replaces one still running (Explore stays clickable); give up after 75 seconds.
+  searchAbort?.abort();
+  const controller=searchAbort=new AbortController();
+  const timer=setTimeout(()=>controller.abort('timeout'),75000);
   $('#progress').classList.remove('error');$('#progress').textContent='Searching public databases and assembling a live graph…';
   $('#identity').textContent='Building live evidence map for '+query+'…';
+  setSearchStatus('loading','Searching public databases for “'+query+'”… This usually takes 10–30 seconds.');
   try {
-    const graph=await api('/api/live-graph',{query,min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked});
+    const graph=await api('/api/live-graph',{query,min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked},controller.signal);
     if(serial!==state.request)return;
-    displayGraph(graph);setView('network');
+    displayGraph(graph);setView('network');setSearchStatus(null);
     $('#progress').textContent='Live graph ready. Search relationships and automated mentions still need scientific review.';
     const box=$('#search-results');box.hidden=graph.identity_resolved;
     box.innerHTML='<p>Identity is unresolved or ambiguous. This graph is search context, not a confirmed diagnosis. Choose a term to refine it:</p>'+graph.live.identities.slice(0,10).map(n=>`<button class="match" data-identity="${esc(n.id)}">${esc(n.label)}<small>${esc(n.id)}</small></button>`).join('');
@@ -388,8 +403,12 @@ async function search(query) {
     box.querySelectorAll('[data-identity]').forEach(b=>b.addEventListener('click',async()=>{
       try{const refined=await api('/api/live-graph',{query,identity_id:b.dataset.identity,...{min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked}});displayGraph(refined);box.hidden=true;}catch(error){showError(error);}
     }));
-  } catch(error){showError(error);$('#identity').textContent='Live graph unavailable; previous map remains visible.';}
-  finally{button.disabled=false;}
+  } catch(error){
+    if(serial!==state.request)return;   // replaced by a newer search
+    if(controller.signal.aborted)error=new Error('The search took too long. Please try again.');
+    showError(error);setSearchStatus('error','Search failed: '+error.message);$('#identity').textContent='Live graph unavailable; previous map remains visible.';
+  }
+  finally{clearTimeout(timer);if(serial===state.request)document.body.classList.remove('searching');}
 }
 async function retrieveLive(query=null) {
   const button=$('#live-papers');button.disabled=true;button.textContent='Searching trusted sources…';
@@ -440,8 +459,9 @@ async function showCoverage() {
     $('#coverage-dialog').showModal();
   }catch(error){showError(error);}
 }
-$('#search-form').addEventListener('submit',e=>{e.preventDefault();search($('#search').value.trim());});
-document.querySelectorAll('.example').forEach(b=>b.addEventListener('click',()=>search(b.dataset.query)));
+// Results-page searches go through the address bar like home searches, so refresh and Back show the right gene.
+$('#search-form').addEventListener('submit',e=>{e.preventDefault();const q=$('#search').value.trim();if(q)goSearch(q);});
+document.querySelectorAll('.example').forEach(b=>b.addEventListener('click',()=>goSearch(b.dataset.query)));
 $('#confidence').addEventListener('change',()=>loadGraph(state.graph.focus));
 $('#hypotheses').addEventListener('change',()=>loadGraph(state.graph.focus));
 $('#network-tab').addEventListener('click',()=>setView('network'));
@@ -466,9 +486,20 @@ function goSearch(query){
 const hashQuery=()=>{const m=/^#q=(.*)$/.exec(location.hash);return m?decodeURIComponent(m[1]):null;};
 $('#home-form').addEventListener('submit',e=>{e.preventDefault();goSearch($('#home-search').value);});
 document.querySelectorAll('.home-q').forEach(b=>b.addEventListener('click',()=>goSearch(b.dataset.query)));
-$('#home-example').addEventListener('click',()=>{history.pushState({example:true},'','#example');openDetail(null);});
+$('#home-example').addEventListener('click',()=>{history.pushState({example:true},'','#example');openExample();});
 $('#brand-home').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname);showHome();});
-window.addEventListener('popstate',()=>{const q=hashQuery();if(q)openDetail(q);else if(location.hash==='#example')openDetail(null);else showHome();});
+window.addEventListener('popstate',()=>{const q=hashQuery();if(q)openDetail(q);else if(location.hash==='#example')openExample();else showHome();});
+// The curated example map (#example): reload it when a live search has replaced it.
+async function openExample(){
+  openDetail(null);
+  if(state.graph&&!state.graph.graph_id&&state.graph.focus==='MONDO:0012812')return;
+  const serial=++state.request;
+  $('#search').value='STXBP1';setSearchStatus(null);
+  try{
+    const graph=await api('/api/graph?'+new URLSearchParams({focus:'MONDO:0012812',min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked}));
+    if(serial===state.request){displayGraph(graph);setView('network');}
+  }catch(error){showError(error);}
+}
 async function init(){
   try{state.health=await api('/api/health');updateChatAvailability();const configured=state.health.agent?.configured;$('#use-openai').disabled=!configured;$('#use-openai').checked=configured;$('#agent-status').textContent=configured?'('+state.health.agent.provider+' available)':'(not configured)';}catch(error){showError(error);}
   const q=hashQuery();

@@ -447,3 +447,14 @@ dialog .dialog-top .quiet:hover{transform:scale(1.08) rotate(90deg)}
 /* Person portraits fill their frame (logos stay contained); crop toward the face. */
 .research-art img.is-photo{object-fit:cover;object-position:50% 28%;background:#e6e9ef}
 .lead-image.is-photo{object-fit:cover;object-position:50% 25%;border-radius:50%}
+/* Results-page search: status line under the search bar; old results dim while a new search loads. */
+.search-status{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:2px 0 0;padding:9px 16px;border-radius:999px;font-size:13.5px;color:var(--navy);
+  background:var(--glass-fill-strong);border:1px solid var(--glass-rim);box-shadow:var(--glass-lift)}
+.search-status[hidden]{display:none}
+.search-status.loading::before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:2px solid rgba(41,63,223,.2);border-top-color:var(--brand);animation:search-spin .8s linear infinite}
+.search-status.error{color:#9a5e48;background:#f9ebe5;border-color:#f1d6cb}
+@keyframes search-spin{to{transform:rotate(360deg)}}
+body.searching .people-hub,body.searching .graph-optional,body.searching .ai-review-panel{opacity:.45;pointer-events:none;filter:saturate(.6);transition:opacity .3s ease,filter .3s ease}
+.people-hub,.graph-optional,.ai-review-panel{transition:opacity .3s ease,filter .3s ease}
+body.searching #search-form button[type=submit]{cursor:progress}
+@media(prefers-reduced-motion:reduce){.search-status.loading::before{animation-duration:2.4s}}

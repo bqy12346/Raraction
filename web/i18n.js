@@ -66,6 +66,7 @@
     'Confidence in the stated metadata relationship only; not in disease causation, efficacy, or clinical applicability.':'可信度只针对所述的元数据关系，不涉及疾病因果、疗效或临床适用性。',
     'Live record type; not a validated biological mechanism cluster.':'实时记录类型，不是经过验证的生物学机制分组。',
     'Resolved by exact label or synonym.':'通过精确名称或同义词解析。',
+    'The search took too long. Please try again.':'搜索时间过长，请重试。', 'Cross-origin requests are not allowed':'不允许跨站请求',
     'Live research map. Literature retrieval and automated mentions do not establish biological causation.':'实时研究图谱。文献检索和自动标注的提及不能确立生物学因果关系。',
     'Search result label and synonyms':'检索结果名称与同义词', 'Retrieved title, abstract and author list':'检索到的标题、摘要和作者列表',
     'Study search, conditions, status and eligibility':'研究检索：疾病、状态和入组条件', 'BioC annotations and character offsets':'BioC 标注及字符位置',
@@ -288,6 +289,9 @@
         [/^Search query: (.+)$/, '检索词：$1'],
         [/^Public identity lookup · (.+)$/, '公共身份查询 · $1'],
         // Last: lines that join several known phrases with " · " (e.g. assessment flags) translate part by part.
+        [/^Searching public databases for “(.+)”… This usually takes 10–30 seconds\.$/, '正在公共数据库中检索“$1”…通常需要 10–30 秒。'],
+        [/^Search failed: (.+)$/, (_, reason) => '搜索失败：' + term(reason)],
+        [/^The server returned an unexpected response \(HTTP (\d+)\)\.$/, '服务器返回了意外的响应（HTTP $1）。'],
         [/ · /, line => line.split(' · ').map(term).join(' · ')]
       ];
       for (const [pattern, replacement] of rules) if (pattern.test(trimmed)) { value = trimmed.replace(pattern, replacement); break; }

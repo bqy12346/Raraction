@@ -208,7 +208,11 @@ def make_handler(app):
 
         def do_POST(self):
             origin = self.headers.get('Origin')
-            if origin and origin not in ('http://' + self.headers.get('Host', ''), 'https://' + self.headers.get('Host', '')):
+            # Same-origin check. Behind Vercel's proxy the visitor's host arrives in X-Forwarded-Host.
+            hosts = {self.headers.get('Host', '')}
+            if SERVERLESS:
+                hosts |= {h.strip() for h in self.headers.get('X-Forwarded-Host', '').split(',') if h.strip()}
+            if origin and origin not in {scheme + host for host in hosts for scheme in ('http://', 'https://')}:
                 return self.send(403, {'error': 'Cross-origin requests are not allowed'})
             try:
                 length = int(self.headers.get('Content-Length', '0'))

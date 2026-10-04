@@ -95,3 +95,39 @@ class ServerlessTests(unittest.TestCase):
         self.assertEqual(entry.original_path('/api/index?__path=reports/abc/proposal'), '/api/reports/abc/proposal')
         self.assertEqual(entry.original_path('/api/health'), '/api/health')
         entry.APP.pool.shutdown(wait=True)
+
+
+class ServerlessOriginTests(unittest.TestCase):
+    """Behind Vercel's proxy the Host header may not be the visitor's host; X-Forwarded-Host is."""
+    def setUp(self):
+        import threading
+        from http.server import ThreadingHTTPServer
+        from atlas.server import make_handler
+        self.tmp = tempfile.TemporaryDirectory(dir=TEST_TMP)
+        self.app = Application(Path(self.tmp.name) / 'o.sqlite')
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), make_handler(self.app))
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.url = 'http://127.0.0.1:' + str(self.server.server_port)
+
+    def tearDown(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.app.pool.shutdown(wait=True)
+        self.tmp.cleanup()
+
+    def post(self, headers):
+        from urllib.error import HTTPError
+        from urllib.request import Request, urlopen
+        request = Request(self.url + '/api/live-search', data=b'{"query": ""}', headers={'Content-Type': 'application/json', **headers})
+        try:
+            with urlopen(request, timeout=10) as response:
+                return response.status
+        except HTTPError as error:
+            return error.code
+
+    def test_forwarded_host_is_accepted_only_when_serverless(self):
+        visitor = {'Origin': 'https://asterisk.vercel.app', 'X-Forwarded-Host': 'asterisk.vercel.app'}
+        with patch('atlas.server.SERVERLESS', True):
+            self.assertEqual(self.post(visitor), 400)   # passed the origin check; the empty query is then rejected
+            self.assertEqual(self.post({'Origin': 'https://evil.example', 'X-Forwarded-Host': 'asterisk.vercel.app'}), 403)
+        self.assertEqual(self.post(visitor), 403)   # the local server keeps the strict Host-only check
