@@ -2,6 +2,16 @@
 'use strict';
 (() => {
   const zh = {
+    'Search & annotation candidates':'检索与标注候选',
+    'RESEARCH MAP':'研究图谱',
+    'Biological mechanisms, shared phenotypes, and research infrastructure.':'生物学机制、共有表型与研究基础设施。',
+    'Shared phenotypes':'共有表型',
+    'Synaptic vesicle release':'突触囊泡释放',
+    'Research infrastructure':'研究基础设施',
+    'Scientific literature':'科学文献',
+    'Genetic variants':'遗传变异',
+    'Path through hidden nodes':'经过隐藏节点的关联路径',
+    'This line summarizes an existing path, not a direct relationship.':'这条线汇总了已有的关联路径，并不表示直接关系。',
     'About this community':'社群简介来源',
     'About this community — official website':'社群简介 — 官方网站',
     'A parent-led foundation supporting families affected by STXBP1-related disorders. It funds research and helps families understand the condition and get involved.':'由家长发起的基金会，为受 STXBP1 相关疾病影响的家庭提供支持，资助研究，并帮助家庭了解疾病和参与相关活动。',
