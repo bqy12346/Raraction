@@ -439,3 +439,11 @@ dialog .dialog-top .quiet:hover{transform:scale(1.08) rotate(90deg)}
   .workspace.legend-collapsed:has(#network-view[hidden]) .sidebar{display:none}
 }
 @media(prefers-reduced-motion:reduce){.workspace .sidebar,.workspace.legend-collapsed .sidebar{animation:none}.legend-toggle{transition:none}.legend-toggle:hover{transform:none}}
+/* Tile detail overlay is dark: keep its expander, arrow and links white (the global summary colour is navy). */
+.research-hover summary,.research-hover details,.research-hover details p{color:#fff}
+.research-hover summary::marker{color:#fff}
+.research-hover a,.research-hover .text-button,.research-hover .lead-links span{color:#fff;text-decoration-color:rgba(255,255,255,.6)}
+.research-hover a:hover,.research-hover .text-button:hover{text-decoration-color:#fff}
+/* Person portraits fill their frame (logos stay contained); crop toward the face. */
+.research-art img.is-photo{object-fit:cover;object-position:50% 28%;background:#e6e9ef}
+.lead-image.is-photo{object-fit:cover;object-position:50% 25%;border-radius:50%}

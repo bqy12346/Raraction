@@ -1,3 +1,4 @@
+<img width="1448" height="1086" alt="asterisk-logo-line" src="https://github.com/user-attachments/assets/04e3759a-28bd-4d57-ac01-60c6b350022e" />
 **English** | [简体中文](README.zh-CN.md)
 
 # Asterisk — AI Atlas for Rare Diseases
@@ -38,6 +39,24 @@ Open **http://127.0.0.1:8000**. Python's standard library provides the HTTP serv
 If Conda's optional plugins fail on your machine, use `conda --no-plugins env create -f environment.yml`. `--port 8001` and `--db data/another.sqlite` are supported.
 
 The committed starter snapshots work offline. New searches need outbound HTTPS; repeated retrievals use a one-hour cache unless explicitly refreshed. Live graph views persist in SQLite and survive restarts. Source outages produce a sparse graph with provider status, rather than substituting the starter's biology. The server binds to the local machine by default and sends a strict Content-Security-Policy (`script-src 'self'`, so the web client uses no inline scripts). This demo has no user authentication or production deployment configuration; run it locally for judging.
+
+## Deploy on Vercel
+
+The repository is ready for Vercel without a build step. `vercel.json` publishes `web/` as the static site, runs the API as one Python serverless function (`api/index.py`, the same handler as the local server), rewrites `/api/*` to it, and sends the same security headers (CSP) as the local server. Only the Python standard library is used; `requirements.txt` is intentionally empty.
+
+1. In Vercel, **Add New → Project** and import `bqy12346/asterisk`. Keep the framework preset **Other**; leave build and output settings to `vercel.json`.
+2. Optional — AI review and chat: under **Settings → Environment Variables** add `OPENAI_API_KEY` (and optionally `OPENAI_MODEL`), or `ATLAS_AGENT_PROVIDER=gemini` with `GEMINI_API_KEY`, or the webhook variables in [docs/AGENT_SETUP.md](docs/AGENT_SETUP.md). For the key-free demo review set `ATLAS_AGENT_PROVIDER=codex_snapshot` (chat then stays unavailable).
+3. Recommended — shared storage: add **Upstash for Redis** from the Vercel Marketplace and connect it to the project. It sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`; live graphs (7 days) and reports (30 days) are then shared by all function instances. `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` also work.
+4. Deploy (or `vercel` / `vercel --prod` with the Vercel CLI). Check `https://<your-domain>/api/health`: it should report `"runtime": "serverless"` and whether `shared_storage` is on.
+
+How the serverless deployment differs from the local server:
+
+- **Writable data** (SQLite, one-hour source cache) lives in `/tmp`, per instance and temporary. The curated starter graph is rebuilt from the committed snapshots on each cold start.
+- **Evidence review** runs inside the `POST /api/analysis` request and returns the report with the job, instead of a background job the page polls. The sourced proposal download is generated in the browser from that report.
+- **Without shared storage**, a live graph that another instance created is rebuilt from its query when needed (same graph ID; slower, and public sources may have changed since). With Upstash it is simply read back.
+- **Time limit**: the function allows 60 seconds (`maxDuration` in `vercel.json`). A first live search for a disease usually takes 10–30 seconds; repeated searches use the cache.
+
+The local server (`python -m atlas.server`) is unchanged and keeps using `data/`.
 
 ### OpenAI contribution without a paid API key
 
@@ -118,6 +137,10 @@ flowchart LR
 | `atlas/audiences.py` | The two trusted audience profiles (`patient`, `expert`) that shape AI review wording |
 | `atlas/agent.py` | Filtered evidence packet, source integrity audit, two optional model passes, citation guard, research actions and export |
 | `atlas/server.py` | HTTP API, bounded asynchronous analysis queue, report endpoints, allowlisted static files, security headers |
+| `atlas/chat.py` | Grounded follow-up chat (`POST /api/chat`) with packet-only citations |
+| `atlas/people.py` | Reviewed portraits for named study contacts; matched by email or study + name, never by name alone |
+| `atlas/runtime.py`, `atlas/kv.py` | Local vs serverless paths; optional shared Upstash Redis storage for graph views and reports |
+| `api/index.py`, `vercel.json` | Vercel entry point and deployment configuration |
 | `web/index.html`, `web/app.js`, `web/styles.css` | Responsive, dependency-free page: home search, interactive SVG graph, paper view, evidence inspector, action view, coverage dialog |
 | `web/i18n.js` | English / Simplified Chinese interface translations |
 | `web/intro.js` | First-visit identity intro and its hand-off animation |
@@ -243,12 +266,13 @@ NCBI information: [Disclaimer and Copyright](https://www.ncbi.nlm.nih.gov/About/
 python -m unittest discover -s tests -v
 ```
 
-The 44 tests cover:
+The 61 tests cover:
 
 - **Evidence model**: provenance, filtering and counterexamples, source-lineage deduplication, shared-asset paths, identity mismatch, no-route behavior, study-status caveats, and original evidence packets.
 - **AI review**: fabricated model citations, mocked two-pass reviews, and both audience profiles.
 - **Live data and storage**: provider outages, SQLite persistence, search, arbitrary-query live graphs, unresolved identity, PubTator mention semantics, and persisted graph isolation.
 - **HTTP and security**: HTTP jobs and exports, endpoint allowlists, server-only credentials, and reflected-secret rejection.
+- **AI chat, portraits and serverless**: grounded chat citations and availability, portrait matching rules, inline analysis, shared KV storage with local fallback, live-graph rebuild, and the Vercel entry point.
 
 Public-source adapters were also exercised live for STXBP1. The OpenAI workflow's orchestration and citation guards were tested with mocked responses; a real model call requires the user's key and has not been run in this build.
 

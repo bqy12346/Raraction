@@ -1,0 +1,17 @@
+# Upload only what the deployment needs: web/ (static site), api/ + atlas/ (function), data snapshots.
+.git
+tests/
+scripts/
+docs/
+05.pdf
+environment.yml
+data/live/
+data/reports/
+data/test-tmp/
+data/browser-profile/
+data/people-ui-profile/
+data/qa/
+data/*.sqlite*
+**/__pycache__/
+*.pyc
+.env

@@ -4,8 +4,11 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
+from atlas import kv
+from atlas.runtime import DATA_DIR
+
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DB = ROOT / 'data' / 'atlas.sqlite'
+DEFAULT_DB = DATA_DIR / 'atlas.sqlite'
 
 SCHEMA = '''
 PRAGMA foreign_keys=ON;
@@ -100,20 +103,36 @@ class Store:
                 matches[node['id']] = {**node, 'matched_alias': row['alias'], 'exact': row['alias'] == q}
         return list(matches.values())[:20]
 
+    # Reports and live graph views are also mirrored to shared KV when configured (serverless instances
+    # do not share local files); reads try the local copy first.
     def save_report(self, report):
         with self.connect() as db:
-            db.execute('INSERT INTO reports VALUES (?,?,?)', (report['id'], report['created_at'], json.dumps(report)))
+            db.execute('INSERT OR REPLACE INTO reports VALUES (?,?,?)', (report['id'], report['created_at'], json.dumps(report)))
+        kv.put('report:' + report['id'], report, 30 * 86400)
 
     def report(self, report_id):
         with self.connect() as db:
             row = db.execute('SELECT data FROM reports WHERE id=?', (report_id,)).fetchone()
-        return json.loads(row['data']) if row else None
+        if row:
+            return json.loads(row['data'])
+        report = kv.get('report:' + report_id)
+        if report:
+            with self.connect() as db:
+                db.execute('INSERT OR REPLACE INTO reports VALUES (?,?,?)', (report['id'], report['created_at'], json.dumps(report)))
+        return report
 
     def save_graph_view(self, view):
         with self.connect() as db:
-            db.execute('INSERT INTO graph_views VALUES (?,?)', (view['id'], json.dumps(view)))
+            db.execute('INSERT OR REPLACE INTO graph_views VALUES (?,?)', (view['id'], json.dumps(view)))
+        kv.put('graph:' + view['id'], view, 7 * 86400)
 
     def graph_view(self, id):
         with self.connect() as db:
             row = db.execute('SELECT data FROM graph_views WHERE id=?', (id,)).fetchone()
-        return json.loads(row['data']) if row else None
+        if row:
+            return json.loads(row['data'])
+        view = kv.get('graph:' + id)
+        if view:
+            with self.connect() as db:
+                db.execute('INSERT OR REPLACE INTO graph_views VALUES (?,?)', (view['id'], json.dumps(view)))
+        return view

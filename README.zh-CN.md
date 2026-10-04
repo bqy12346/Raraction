@@ -39,6 +39,24 @@ python -m atlas.server
 
 已提交的入门快照可离线使用。新的搜索需要对外 HTTPS 访问；重复检索会使用一小时缓存，除非显式要求刷新。实时图谱视图持久保存在 SQLite 中，重启后依然存在。数据源故障时，系统会生成一个标注了数据源状态的稀疏图谱，而不会拿入门示例的生物学内容来替代。服务器默认只绑定本机，并发送严格的内容安全策略（`script-src 'self'`，因此网页端不使用内联脚本）。本演示没有用户认证，也没有生产部署配置；评审时请在本地运行。
 
+## 部署到 Vercel
+
+仓库已经适配 Vercel，不需要构建步骤。`vercel.json` 会把 `web/` 作为静态网站发布，把 API 作为一个 Python 无服务器函数运行（`api/index.py`，与本地服务器使用同一套请求处理逻辑），把 `/api/*` 转发给它，并发送与本地服务器相同的安全响应头（CSP）。项目只使用 Python 标准库，`requirements.txt` 有意留空。
+
+1. 在 Vercel 中选择 **Add New → Project**，导入 `bqy12346/asterisk`。框架预设保持 **Other**，构建和输出设置交给 `vercel.json`。
+2. 可选：启用 AI 审阅和对话。在 **Settings → Environment Variables** 中添加 `OPENAI_API_KEY`（可选 `OPENAI_MODEL`）；或设置 `ATLAS_AGENT_PROVIDER=gemini` 并添加 `GEMINI_API_KEY`；或使用 [docs/AGENT_SETUP.md](docs/AGENT_SETUP.md) 中的 webhook 变量。若只需无密钥的演示审阅，设置 `ATLAS_AGENT_PROVIDER=codex_snapshot`（此时对话功能不可用）。
+3. 推荐：共享存储。在 Vercel Marketplace 中添加 **Upstash for Redis** 并连接到项目。它会自动设置 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN`，之后实时图谱（保存 7 天）和报告（保存 30 天）会在所有函数实例之间共享。也支持 `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`。
+4. 部署（或用 Vercel CLI 运行 `vercel` / `vercel --prod`）。打开 `https://<你的域名>/api/health` 检查：应显示 `"runtime": "serverless"`，以及 `shared_storage` 是否开启。
+
+无服务器部署与本地服务器的区别：
+
+- **可写数据**（SQLite、一小时的数据源缓存）存放在 `/tmp`，每个实例独立且是临时的。人工整理的入门图谱会在每次冷启动时根据已提交的快照重建。
+- **证据审阅**在 `POST /api/analysis` 请求内完成，并随任务直接返回报告，而不是由页面轮询的后台任务。带来源的提案下载由浏览器根据该报告生成。
+- **未配置共享存储时**，如果某个实时图谱是由其他实例创建的，需要时会根据原检索词重建（图谱 ID 不变；速度较慢，公共数据源也可能已有更新）。配置 Upstash 后则直接读取。
+- **时间限制**：函数最长运行 60 秒（`vercel.json` 中的 `maxDuration`）。某种疾病的首次实时搜索通常需要 10–30 秒，重复搜索会使用缓存。
+
+本地服务器（`python -m atlas.server`）不受影响，仍然使用 `data/`。
+
 ### 无需付费 API 密钥的 OpenAI 贡献
 
 挑战公告允许使用 Codex 等 OpenAI 工具。我们的流程是：
@@ -118,6 +136,10 @@ flowchart LR
 | `atlas/audiences.py` | 决定 AI 审阅写法的两个受信任受众配置（`patient`、`expert`） |
 | `atlas/agent.py` | 筛选后的证据包、来源完整性审计、两轮可选模型调用、引用守卫、研究行动与导出 |
 | `atlas/server.py` | HTTP API、有上限的异步分析队列、报告接口、白名单静态文件、安全响应头 |
+| `atlas/chat.py` | 基于证据的追问对话（`POST /api/chat`），只能引用证据包中的来源 |
+| `atlas/people.py` | 经审核的研究联系人照片；按邮箱或"研究 + 姓名"匹配，绝不只凭姓名 |
+| `atlas/runtime.py`、`atlas/kv.py` | 本地与无服务器环境的路径；可选的 Upstash Redis 共享存储，用于图谱视图和报告 |
+| `api/index.py`、`vercel.json` | Vercel 入口与部署配置 |
 | `web/index.html`、`web/app.js`、`web/styles.css` | 响应式、无依赖的页面：主页搜索、交互式 SVG 图谱、论文视图、证据查看器、行动视图、来源窗口 |
 | `web/i18n.js` | 英文 / 简体中文界面翻译 |
 | `web/intro.js` | 首次访问的身份选择开场页及其过渡动画 |
@@ -243,12 +265,13 @@ NCBI 相关信息：[免责声明与版权](https://www.ncbi.nlm.nih.gov/About/d
 python -m unittest discover -s tests -v
 ```
 
-44 项测试覆盖：
+61 项测试覆盖：
 
 - **证据模型**：来源记录、筛选与反例、出版来源去重、共享资源路径、身份不匹配、无路径情况、研究状态注意事项、原始证据包。
 - **AI 审阅**：伪造的模型引用、模拟的两轮审阅、两个受众配置。
 - **实时数据与存储**：数据源故障、SQLite 持久化、搜索、任意查询的实时图谱、未解析的身份、PubTator 提及语义、持久化图谱隔离。
 - **HTTP 与安全**：HTTP 任务与导出、接口白名单、仅限服务器端的凭据、拒绝回显密钥。
+- **AI 对话、照片与无服务器部署**：对话引用与可用性、照片匹配规则、请求内完成的审阅、共享 KV 存储及本地回退、实时图谱重建，以及 Vercel 入口。
 
 公共数据源适配器也针对 STXBP1 做了实际调用测试。OpenAI 流程的编排和引用守卫使用模拟响应测试；真实的模型调用需要用户自己的密钥，本版本尚未运行过。
 
