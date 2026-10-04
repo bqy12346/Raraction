@@ -15,6 +15,9 @@ function link(url, text) {
 function badge(status) { const cls = ['inferred','hypothesis','research_proposal'].includes(status) ? 'gold' : ['disputed','conflicting'].includes(status) ? 'rust' : ['unknown','unreviewed_candidate'].includes(status) ? 'muted' : ''; return `<span class="badge ${cls}">${esc(pretty(status))}</span>`; }
 async function api(url, body) {
   const response = await fetch(url, body ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) } : {});
+  if (!response.headers.get('content-type')?.includes('application/json')) {
+    throw new Error(response.status === 504 ? 'Search timed out. Please try again.' : 'The search API returned an unexpected response. Please try again.');
+  }
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
   return data;
@@ -372,8 +375,20 @@ function renderLive() {
 }
 function setView(view) { state.view=view;$('#network-view').hidden=view!=='network';$('#papers-view').hidden=view!=='papers';$('#network-tab').classList.toggle('active',view==='network');$('#papers-tab').classList.toggle('active',view==='papers');$('#fit').hidden=view!=='network'; }
 async function search(query) {
+  query=query.trim();if(!query)return;
   state.query=query;$('#search').value=query;
   const serial=++state.request;
+  // A new query must never show the starter map or results from the previous query.
+  ++leadRequest;outreachLeads=null;
+  stopGraphMotion();
+  state.graph=null;state.selected=null;state.report=null;state.live=null;
+  state.visibleEdges=[];state.positions={};
+  syncChatToGraph();
+  for(const selector of ['#graph','#cluster-list','#details','#paper-list','#live-results','#review-output','#research-results','#research-list']) $(selector).replaceChildren();
+  const box=$('#search-results');box.hidden=false;box.textContent='Searching for '+query+'…';
+  $('#community-results').textContent='Finding connections for '+query+'…';
+  $('#graph-count').textContent='';$('#map-status').textContent='Searching…';
+  for(const selector of ['#confidence','#hypotheses','#review','#live-papers']) $(selector).disabled=true;
   const button=$('#search-form button[type="submit"]');button.disabled=true;
   $('#progress').classList.remove('error');$('#progress').textContent='Searching public databases and assembling a live graph…';
   $('#identity').textContent='Building live evidence map for '+query+'…';
@@ -382,14 +397,25 @@ async function search(query) {
     if(serial!==state.request)return;
     displayGraph(graph);setView('network');
     $('#progress').textContent='Live graph ready. Search relationships and automated mentions still need scientific review.';
-    const box=$('#search-results');box.hidden=graph.identity_resolved;
+    box.hidden=graph.identity_resolved;
     box.innerHTML='<p>Identity is unresolved or ambiguous. This graph is search context, not a confirmed diagnosis. Choose a term to refine it:</p>'+graph.live.identities.slice(0,10).map(n=>`<button class="match" data-identity="${esc(n.id)}">${esc(n.label)}<small>${esc(n.id)}</small></button>`).join('');
     if(!graph.live.identities.length)box.innerHTML='<p>No identity was resolved. The graph shows available search records; confirm the disease, gene, or symptom name before interpreting it.</p>';
     box.querySelectorAll('[data-identity]').forEach(b=>b.addEventListener('click',async()=>{
-      try{const refined=await api('/api/live-graph',{query,identity_id:b.dataset.identity,...{min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked}});displayGraph(refined);box.hidden=true;}catch(error){showError(error);}
+      try{const refined=await api('/api/live-graph',{query,identity_id:b.dataset.identity,...{min_confidence:$('#confidence').value,include_inferred:$('#hypotheses').checked}});if(serial!==state.request)return;displayGraph(refined);box.hidden=true;}catch(error){if(serial===state.request)showError(error);}
     }));
-  } catch(error){showError(error);$('#identity').textContent='Live graph unavailable; previous map remains visible.';}
-  finally{button.disabled=false;}
+  } catch(error){
+    if(serial!==state.request)return;
+    showError(error);$('#identity').textContent='Search unavailable for '+query;
+    box.hidden=false;box.textContent='Could not load results for '+query+'. '+error.message;
+    $('#community-results').textContent='No results loaded. Please retry your search.';
+    $('#map-status').textContent='Search failed';
+  }
+  finally{
+    if(serial===state.request){
+      button.disabled=false;
+      for(const selector of ['#confidence','#hypotheses','#review','#live-papers']) $(selector).disabled=!state.graph;
+    }
+  }
 }
 async function retrieveLive(query=null) {
   const button=$('#live-papers');button.disabled=true;button.textContent='Searching trusted sources…';
@@ -470,11 +496,13 @@ $('#home-example').addEventListener('click',()=>{history.pushState({example:true
 $('#brand-home').addEventListener('click',e=>{e.preventDefault();history.pushState({},'',location.pathname);showHome();});
 window.addEventListener('popstate',()=>{const q=hashQuery();if(q)openDetail(q);else if(location.hash==='#example')openDetail(null);else showHome();});
 async function init(){
+  const initialRequest=state.request;
   try{state.health=await api('/api/health');updateChatAvailability();const configured=state.health.agent?.configured;$('#use-openai').disabled=!configured;$('#use-openai').checked=configured;$('#agent-status').textContent=configured?'('+state.health.agent.provider+' available)':'(not configured)';}catch(error){showError(error);}
+  if(state.request!==initialRequest)return; // A search started while health was loading.
   const q=hashQuery();
   if(q)document.body.classList.remove('is-home');else if(location.hash==='#example')openDetail(null);else showHome();
-  await loadGraph('MONDO:0012812');   // the starter map loads first, so a live search always replaces it rather than racing it
   if(q)openDetail(q);
+  else await loadGraph('MONDO:0012812');
 }
 init();
 
