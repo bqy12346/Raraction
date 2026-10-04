@@ -236,7 +236,6 @@
     'Help me understand':'帮我读懂', 'Find out more':'查看更多', 'View details':'查看详情',
     'Photo unavailable':'暂无照片', 'Logo unavailable':'暂无机构标识',
     'Close researcher list':'关闭研究者列表',
-    'For patients, families and advocates like Maria: understand the condition, what research has found, and how far possible treatments have progressed. Explore what may be feasible, what is still uncertain, and questions to discuss with your care team — with links to the sources.':'帮助 Maria 这样的患者、家属及患者组织代表了解疾病、研究发现，以及潜在治疗目前进展到哪一步。解释哪些方向可能可行、哪些仍不确定，并整理可与医疗团队讨论的问题，附来源链接。',
     'Related through shared research or resources; may focus on a different condition.':'通过共同研究或资源找到，关注的疾病可能不同。',
     'The sources link this person or organization to your search.':'来源资料显示此人或机构与你的搜索有关。',
     'Use the listed contact details to ask about their work or support.':'可通过所列联系方式咨询研究或支持服务。',

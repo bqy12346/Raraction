@@ -467,7 +467,7 @@ body.searching #search-form button[type=submit]{cursor:progress}
 .ai-review-panel .chat-head small{font-size:12.5px}
 /* The guide's intro and full review read as the first card of the conversation. */
 .ai-review-panel #review-output.guide-output{margin-top:18px;padding:14px 18px;border-radius:18px;background:var(--glass-fill-strong);border:1px solid var(--glass-rim);box-shadow:var(--glass-lift)}
-.ai-review-panel #review-output.guide-output>.small:only-child{margin:0;font-size:13.5px;line-height:1.6;color:var(--muted)}
+.ai-review-panel #review-output.guide-output:empty{display:none}
 .ai-review-panel #review-output .detail-header{padding-top:4px}
 .ai-review-panel #review-output .detail-header h2{font-size:21px}
 /* Composer: text on top, tools underneath, send on the right. */
