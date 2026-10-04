@@ -68,8 +68,7 @@ def build_live_view(live, identity_id=None, annotate=True):
                 continue
             author_id = 'atlas:author:' + id + ':' + str(index)
             profile = next((x for x in paper.get('author_profiles', []) if x['name'] == author), {})
-            add_node(author_id, 'researcher', author, url=paper['url'], affiliation=profile.get('affiliation'), email=profile.get('email'),
-                     identity_note='Publication-scoped identity and affiliation contact. Not disambiguated; current role and contact information must be verified.')
+            add_node(author_id, 'researcher', author, url=paper['url'], affiliation=profile.get('affiliation'), email=profile.get('email'))
             edge(id, author_id, 'authored_by', 'This person is listed as an author in the indexed publication.', src, 'Author list')
     for trial in live['studies'][:8]:
         id = 'NCT:' + trial['id'][3:]
@@ -88,7 +87,7 @@ def build_live_view(live, identity_id=None, annotate=True):
             edge(id, person_id, 'listed_study_contact', 'The registry lists this person as a study contact or official.', src, 'contactsLocationsModule')
         if trial.get('sponsor'):
             sponsor_id = 'study-sponsor:' + hashlib.sha256(trial['sponsor'].encode()).hexdigest()[:16]
-            add_node(sponsor_id, 'institution', trial['sponsor'], url=trial['url'], contact_url=trial['url'], description='Lead sponsor in the retrieved study record. The registry is a source link, not the institution website.')
+            add_node(sponsor_id, 'institution', trial['sponsor'], url=trial['url'], contact_url=trial['url'])
             edge(id, sponsor_id, 'sponsored_by', 'Listed lead study sponsor.', src, 'sponsorCollaboratorsModule.leadSponsor')
     for community in matching_communities(query, selected):
         cid = community['id']
